@@ -1,0 +1,16 @@
+{
+  "name": "onboard-mariana-silva",
+  "version": "1.0.0",
+  "description": "A initial project to become familiar with developing techonologies",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "fastify": "^5.3.2"
+  }
+}
