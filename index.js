@@ -6,7 +6,7 @@ app.get("/hello", async (request, reply) => {
   return { message: "Hello World!" };
 });
 
-const start = async () => {
+async function start() {
   try {
     await app.listen({ port: PORT });
     console.log(`Server is running at http://localhost:${PORT}`);
