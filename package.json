@@ -3,14 +3,22 @@
   "version": "1.0.0",
   "description": "A initial project to become familiar with developing techonologies",
   "main": "index.js",
+  "type": "module",
   "scripts": {
-    "start": "node index.js",
+    "start": "node  --no-warnings=ExperimentalWarning --loader ts-node/esm ./src/index.ts",
+    "dev": "nodemon ./src/index.ts",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "fastify": "^5.3.2"
+    "fastify": "5.3.2"
+  },
+  "devDependencies": {
+    "@types/node": "22.15.14",
+    "nodemon": "3.1.10",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3"
   }
 }
