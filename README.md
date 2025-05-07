@@ -11,6 +11,8 @@ A simple server with CRUD operations on a Users database.
 - **PostgreSQL** - Relational database
 - **Docker** - Containers to instantiate the databases locally
 - **Prisma** - ORM to interact with the databases
+- **Postman** - Simulating requests to the server
+- **TablePlus** - Visualizing and direct interacting with the databases
 
 ---
 
