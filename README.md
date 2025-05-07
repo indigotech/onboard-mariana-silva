@@ -18,7 +18,7 @@ A simple server with CRUD operations on a Users database.
 
 1. **Clone the repository** and, inside its folder, make sure that npm and docker are also installed and that you have access to them.
 
-2. **Install depenencies**. Inside your project folder, run the command:
+2. **Install dependencies**. Inside your project folder, run the command:
 
 ```bash
 npm install
@@ -58,7 +58,7 @@ DATABASE_URL="postgresql://dev_user:dev_pass@localhost:5432/dev_db?schema=public
 npx prisma migrate dev --name init
 ```
 
-The provided `DATABASE_URL` example will initialize the development database. If you wish to connect to the test database, you should change the `.env` file to reference the test database credentials and run the migrate command once again.
+The provided `DATABASE_URL` example will initialize the development database. If you wish to connect to the test database, you should change the `.env` file to reference the test database credentials found on `docker-compose.yml` and run the migrate command once again.
 
 8. **Interact with the DB.** Now, you may use TablePlus to directly perform CRUD operations on the database, or even use Prisma-Client to define operations inside the API description.
 
