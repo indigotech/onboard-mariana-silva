@@ -1,8 +1,8 @@
-import fastify, { FastifyReply, FastifyRequest } from "fastify";
+import fastify from "fastify";
 const PORT: number = 3000;
 const app = fastify({ logger: true });
 
-app.get("/hello", async (request: FastifyRequest, reply: FastifyReply) => {
+app.get("/hello", async () => {
   return { message: "Hello World!" };
 });
 
