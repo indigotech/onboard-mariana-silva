@@ -1,0 +1,18 @@
+const fastify = require("fastify");
+const PORT = 3000;
+const app = fastify({ logger: true });
+
+app.get("/hello", async (request, reply) => {
+  return { message: "Hello World!" };
+});
+
+async function start() {
+  try {
+    await app.listen({ port: PORT });
+    console.log(`Server is running at http://localhost:${PORT}`);
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+};
+start();
