@@ -2,7 +2,7 @@ import { PrismaClient } from "./generated/prisma/index.js";
 const prisma = new PrismaClient();
 
 async function main() {
-  const user = await prisma.user.create({
+  await prisma.user.create({
     data: {
       id: 2,
       name: "Mariana",
@@ -11,7 +11,6 @@ async function main() {
       birthDate: new Date("2004-10-10"),
     },
   });
-  console.log(user);
 }
 
 main()
