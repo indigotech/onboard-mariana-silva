@@ -1,5 +1,5 @@
+import { PrismaClient } from "@prisma/client";
 import fastify from "fastify";
-import { PrismaClient } from "../node_modules/.prisma/client/index.js";
 
 const prisma = new PrismaClient();
 const PORT = 3000;
