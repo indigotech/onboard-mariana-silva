@@ -47,11 +47,19 @@ app.post(
   ) => {
     try {
       const { name, email, password, birthDate } = request.body;
+      const newUser = await prisma.user.create({
+        data: {
+          name: name, // id is automatically incremented
+          email: email,
+          password: password,
+          birthDate: new Date(birthDate),
+        },
+      });
       return reply.code(201).send({
-        id: 1,
-        name: name,
-        email: email,
-        birthdate: birthDate,
+        id: newUser.id,
+        name: newUser.name,
+        email: newUser.email,
+        birthdate: newUser.birthDate,
       });
     } catch (err) {
       request.log.error("Error creating post:", err);
