@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-import fastify from "fastify";
+import fastify, { FastifyReply, FastifyRequest } from "fastify";
 
 const prisma = new PrismaClient();
 const PORT = 3000;
@@ -22,6 +22,8 @@ const UserRequestBodySchema = {
         },
         password: {
           type: "string",
+          minLength: 6,
+          pattern: "(?=.*[A-Za-z])(?=.*\\d)",
         },
         birthDate: {
           type: "string",
@@ -47,6 +49,15 @@ app.post(
   ) => {
     try {
       const { name, email, password, birthDate } = request.body;
+      const existingUser = await prisma.user.findUnique({
+        where: { email: email },
+      });
+      if (existingUser) {
+        return reply.status(400).send({
+          error: "Email is already registered",
+          message: "Please try signing up with a different email address.",
+        });
+      }
       const newUser = await prisma.user.create({
         data: {
           name: name, // id is automatically incremented
