@@ -1,4 +1,5 @@
 import { PrismaClient } from "@prisma/client";
+import { hash } from "bcrypt-ts";
 import fastify, { FastifyReply, FastifyRequest } from "fastify";
 
 const prisma = new PrismaClient();
@@ -58,11 +59,12 @@ app.post(
           message: "Please try signing up with a different email address.",
         });
       }
+      const hashedPassword = await hash(password, 8);
       const newUser = await prisma.user.create({
         data: {
           name: name, // id is automatically incremented
           email: email,
-          password: password,
+          password: hashedPassword,
           birthDate: new Date(birthDate),
         },
       });
