@@ -81,7 +81,7 @@ app.post(
   }
 );
 
-async function start() {
+export async function startServer() {
   try {
     await app.listen({ port: PORT });
     console.log(`Server is running at http://localhost:${PORT}`);
@@ -90,4 +90,16 @@ async function start() {
     process.exit(1);
   }
 }
-start();
+export async function stopServer() {
+  try {
+    await app.close();
+    console.log("Server stopped");
+  } catch (err) {
+    app.log.error(err);
+    process.exit(1);
+  }
+}
+
+if (import.meta.filename === process.argv[1]) {
+  startServer();
+}
