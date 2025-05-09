@@ -1,5 +1,5 @@
 import fastify from "fastify";
-const PORT: number = 3000;
+const PORT = 3000;
 const app = fastify({ logger: true });
 
 app.get("/hello", async () => {
