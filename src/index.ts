@@ -1,8 +1,8 @@
-const fastify = require("fastify");
+import fastify, { FastifyReply, FastifyRequest } from "fastify";
 const PORT = 3000;
 const app = fastify({ logger: true });
 
-app.get("/hello", async (request, reply) => {
+app.get("/hello", async (request: FastifyRequest, reply: FastifyReply) => {
   return { message: "Hello World!" };
 });
 
@@ -14,5 +14,5 @@ async function start() {
     app.log.error(err);
     process.exit(1);
   }
-};
+}
 start();
