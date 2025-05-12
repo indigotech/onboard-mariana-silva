@@ -4,44 +4,11 @@ import fastify, {
   FastifyReply,
   FastifyRequest,
 } from "fastify";
-import { prisma } from "./setup-db";
+import { prisma } from "../setup-db";
+import { RequestBody, UserRequestBodySchema } from "./schemas";
 
-const PORT = 3000;
-
-const UserRequestBodySchema = {
-  schema: {
-    body: {
-      type: "object",
-      properties: {
-        name: {
-          type: "string",
-        },
-        email: {
-          type: "string",
-        },
-        password: {
-          type: "string",
-          minLength: 6,
-          pattern: "(?=.*[A-Za-z])(?=.*\\d)",
-        },
-        birthDate: {
-          type: "string",
-        },
-      },
-      required: ["name", "email", "password", "birthDate"],
-    },
-  },
-};
-
-interface RequestBody {
-  name: string;
-  email: string;
-  password: string;
-  birthDate: string;
-}
-let app: FastifyInstance;
-function buildServer() {
-  app = fastify();
+export function buildServer(): FastifyInstance {
+  const app = fastify({});
 
   app.get("/hello", async () => {
     return { message: "Hello World!" };
@@ -86,24 +53,5 @@ function buildServer() {
       }
     }
   );
-}
-export async function startServer() {
-  buildServer();
-  try {
-    await app.listen({ port: PORT });
-    console.log(`Server is running at http://localhost:${PORT}\n`);
-  } catch (err) {
-    app.log.error(err);
-    process.exit(1);
-  }
-}
-
-export async function stopServer() {
-  try {
-    await app.close();
-    console.log("Server stopped");
-  } catch (err) {
-    app.log.error(err);
-    process.exit(1);
-  }
+  return app;
 }
