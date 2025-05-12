@@ -15,7 +15,7 @@ after(async () => {
 });
 
 describe("POST /users", function () {
-  it("should create a new user", async function () {
+  it("should create a new user and return credentials + id, except from the password", async function () {
     const body = {
       name: "mariana",
       email: "mari@gmail.com",
@@ -49,5 +49,60 @@ describe("POST /users", function () {
     expect(isPasswordCorrect).to.be.true;
 
     await prisma.user.deleteMany();
+  });
+  it("should return an error if the email already exists", async function () {
+    const body = {
+      name: "mariana",
+      email: "mari@gmail.com",
+      password: "senha123",
+      birthDate: "2004-10-10",
+    };
+    await axios.post("http://localhost:3000/users", body);
+    try {
+      await axios.post("http://localhost:3000/users", body);
+    } catch (error) {
+      expect(error.response.status).to.be.equal(400);
+      expect(error.response.data).to.be.deep.equal({
+        message: "The provided email address is already in use.",
+        code: "EML_01",
+        details: "Unique constraint failed on the fields: (`email`)",
+      });
+    }
+  });
+  it("should return an error if the password has less than 6 characters", async function () {
+    const body = {
+      name: "mariana",
+      email: "mari@gmail.com",
+      password: "a",
+      birthDate: "2004-10-10",
+    };
+    try {
+      await axios.post("http://localhost:3000/users", body);
+    } catch (error) {
+      expect(error.response.status).to.be.equal(400);
+      expect(error.response.data).to.be.deep.equal({
+        message: "Password must be at least 6 characters long.",
+        code: "PSW_01",
+        details: "must NOT have fewer than 6 characters",
+      });
+    }
+  });
+  it("should return an error if the password has not letter or digits", async function () {
+    const body = {
+      name: "mariana",
+      email: "mari@gmail.com",
+      password: "aaaaaaaaaa",
+      birthDate: "2004-10-10",
+    };
+    try {
+      await axios.post("http://localhost:3000/users", body);
+    } catch (error) {
+      expect(error.response.status).to.be.equal(400);
+      expect(error.response.data).to.be.deep.equal({
+        message: "Password must contain at least one letter and one number.",
+        code: "PSW_02",
+        details: 'must match pattern "(?=.*[A-Za-z])(?=.*\\d)"',
+      });
+    }
   });
 });
