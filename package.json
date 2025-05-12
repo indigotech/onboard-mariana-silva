@@ -8,7 +8,7 @@
     "start": "node  --no-warnings=ExperimentalWarning --loader ts-node/esm ./src/index.ts",
     "dev": "nodemon ./src/index.ts",
     "lint": "eslint ./src --ext .ts",
-    "test": "DOTENV_CONFIG_PATH=./.test.env mocha -r tsx -r dotenv/config src/test/test.ts"
+    "test": "DOTENV_CONFIG_PATH=./.test.env mocha -r tsx -r dotenv/config src/test/*.ts"
   },
   "keywords": [],
   "author": "",
