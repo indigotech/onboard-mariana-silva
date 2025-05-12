@@ -1,5 +1,5 @@
+import { startServer, stopServer } from "./server/setup-server";
 import { connectDB, disconnectDB } from "./setup-db";
-import { startServer, stopServer } from "./setup-server";
 
 export async function start() {
   await connectDB();
