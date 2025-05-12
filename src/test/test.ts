@@ -37,32 +37,29 @@ describe("Server", function () {
         };
         const reply = await axios.post("http://localhost:3000/users", body);
 
+        const user = await prisma.user.findUnique({
+          where: { email: body.email },
+        });
+
         expect(reply.status).to.be.equal(201);
-        expect(reply.data).to.have.property("id");
-        expect(reply.data).to.deep.include({
+
+        expect(reply.data).to.be.deep.equal({
+          id: user.id,
           name: "mariana",
           email: "mari@gmail.com",
           birthdate: new Date(body.birthDate).toISOString(),
         });
 
-        const user = await prisma.user.findUnique({
-          where: { email: body.email },
+        expect(user).to.be.deep.equal({
+          name: "mariana",
+          email: "mari@gmail.com",
+          birthDate: new Date(body.birthDate),
         });
 
-        expect(user).to.not.be.null;
+        expect(reply.data.id).to.be.gt(0);
 
-        if (user) {
-          expect(user).to.deep.include({
-            name: "mariana",
-            email: "mari@gmail.com",
-            birthDate: new Date(body.birthDate),
-          });
-
-          expect(user).to.have.property("id");
-
-          const isPasswordCorrect = await compare(body.password, user.password);
-          expect(isPasswordCorrect).to.be.true;
-        }
+        const isPasswordCorrect = await compare(body.password, user.password);
+        expect(isPasswordCorrect).to.be.true;
 
         await prisma.user.deleteMany();
       });
