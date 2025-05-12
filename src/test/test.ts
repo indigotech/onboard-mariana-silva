@@ -1,14 +1,12 @@
-import { PrismaClient } from "@prisma/client";
 import axios from "axios";
 import { compare } from "bcrypt-ts";
 import { expect } from "chai";
 import "mocha";
 import { start, stop } from "../setup";
-
-let prisma: PrismaClient;
+import { prisma } from "../setup-db";
 
 before(async () => {
-  prisma = await start();
+  await start();
 });
 
 after(async () => {

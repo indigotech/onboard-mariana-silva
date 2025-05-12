@@ -1,10 +1,11 @@
-import { PrismaClient } from "@prisma/client";
 import { hash } from "bcrypt-ts";
 import fastify, {
   FastifyInstance,
   FastifyReply,
   FastifyRequest,
 } from "fastify";
+import { prisma } from "./setup-db";
+
 const PORT = 3000;
 
 const UserRequestBodySchema = {
@@ -39,7 +40,7 @@ interface RequestBody {
   birthDate: string;
 }
 let app: FastifyInstance;
-function buildServer(prisma: PrismaClient) {
+function buildServer() {
   app = fastify();
 
   app.get("/hello", async () => {
@@ -86,8 +87,8 @@ function buildServer(prisma: PrismaClient) {
     }
   );
 }
-export async function startServer(prisma: PrismaClient) {
-  buildServer(prisma);
+export async function startServer() {
+  buildServer();
   try {
     await app.listen({ port: PORT });
     console.log(`Server is running at http://localhost:${PORT}\n`);
@@ -96,6 +97,7 @@ export async function startServer(prisma: PrismaClient) {
     process.exit(1);
   }
 }
+
 export async function stopServer() {
   try {
     await app.close();
