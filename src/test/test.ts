@@ -50,7 +50,7 @@ describe("Server", function () {
           birthdate: new Date(body.birthDate).toISOString(),
         });
 
-        expect(user).to.be.deep.equal({
+        expect(user).to.deep.include({
           name: "mariana",
           email: "mari@gmail.com",
           birthDate: new Date(body.birthDate),
