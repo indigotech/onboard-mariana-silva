@@ -42,7 +42,7 @@ describe("Server", function () {
         expect(reply.data).to.deep.include({
           name: "mariana",
           email: "mari@gmail.com",
-          birthdate: "2004-10-10T00:00:00.000Z",
+          birthdate: new Date(body.birthDate).toISOString(),
         });
 
         const user = await prisma.user.findUnique({
@@ -57,6 +57,8 @@ describe("Server", function () {
             email: "mari@gmail.com",
             birthDate: new Date(body.birthDate),
           });
+
+          expect(user).to.have.property("id");
 
           const isPasswordCorrect = await compare(body.password, user.password);
           expect(isPasswordCorrect).to.be.true;
