@@ -32,23 +32,23 @@ export function errorHandler(
     }
   }
 
-  if (error instanceof Prisma.PrismaClientKnownRequestError) {
-    if (error.code === "P2002") {
-      const target = error.meta?.target as string[] | undefined;
-
-      if (target?.includes("email")) {
-        return reply.status(400).send({
-          message: "The provided email address is already in use.",
-          code: "EML_01",
-          details: "Unique constraint failed on the fields: (`email`)",
-        });
-      }
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2002"
+  ) {
+    const target = error.meta?.target as string[] | undefined;
+    if (target?.includes("email")) {
+      return reply.status(400).send({
+        message: "The provided email address is already in use.",
+        code: "EML_01",
+        details: "Unique constraint failed on the fields: (`email`)",
+      });
     }
-  }
 
-  return reply.status(500).send({
-    message: "There was an error processing your request.",
-    code: "UNK_01",
-    details: error.message,
-  });
+    return reply.status(500).send({
+      message: "There was an error processing your request.",
+      code: "UNK_01",
+      details: error.message,
+    });
+  }
 }
