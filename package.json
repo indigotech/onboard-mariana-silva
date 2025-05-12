@@ -8,7 +8,7 @@
     "start": "node  --no-warnings=ExperimentalWarning --loader ts-node/esm ./src/index.ts",
     "dev": "nodemon ./src/index.ts",
     "lint": "eslint ./src --ext .ts",
-    "test": "mocha -r tsx test/test.ts"
+    "test": "DOTENV_CONFIG_PATH=./.test.env mocha -r tsx -r dotenv/config src/test/test.ts"
   },
   "keywords": [],
   "author": "",
@@ -25,6 +25,7 @@
     "@types/node": "22.15.14",
     "axios": "1.9.0",
     "chai": "5.2.0",
+    "dotenv": "16.5.0",
     "eslint": "9.26.0",
     "eslint-config-prettier": "10.1.2",
     "eslint-plugin-prettier": "5.4.0",
