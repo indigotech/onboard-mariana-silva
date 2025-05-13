@@ -3,6 +3,9 @@ export const UserRequestBodySchema = {
     body: {
       type: "object",
       properties: {
+        id: {
+          type: "number",
+        },
         name: {
           type: "string",
         },
@@ -19,6 +22,23 @@ export const UserRequestBodySchema = {
         },
       },
       required: ["name", "email", "password", "birthDate"],
+    },
+  },
+};
+
+export const AuthRequestBodySchema = {
+  schema: {
+    body: {
+      type: "object",
+      properties: {
+        email: {
+          type: "string",
+        },
+        password: {
+          type: "string",
+        },
+      },
+      required: ["email", "password"],
     },
   },
 };
