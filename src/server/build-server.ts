@@ -48,7 +48,7 @@ export function buildServer(): FastifyInstance {
   );
 
   app.post("/auth", AuthRequestBodySchema, async (request, reply) => {
-    const { email, password } = request.body;
+    const { email, password, rememberMe } = request.body;
     const user = await prisma.user.findUnique({
       where: { email },
     });
@@ -63,7 +63,7 @@ export function buildServer(): FastifyInstance {
     }
 
     const token = jwt.sign({ id: user.id }, process.env.TOKEN_KEY, {
-      expiresIn: Number(process.env.TOKEN_TIMEOUT) ?? 30,
+      expiresIn: rememberMe ? "1w" : (Number(process.env.TOKEN_TIMEOUT) ?? 30),
     });
 
     return reply.code(200).send({
