@@ -3,6 +3,9 @@ const UserRequestBodySchema = {
     body: {
       type: "object",
       properties: {
+        id: {
+          type: "number",
+        },
         name: {
           type: "string",
         },
@@ -23,6 +26,23 @@ const UserRequestBodySchema = {
   },
 };
 
+const AuthRequestBodySchema = {
+  schema: {
+    body: {
+      type: "object",
+      properties: {
+        email: {
+          type: "string",
+        },
+        password: {
+          type: "string",
+        },
+      },
+      required: ["email", "password"],
+    },
+  },
+};
+
 interface RequestBody {
   name: string;
   email: string;
@@ -30,4 +50,4 @@ interface RequestBody {
   birthDate: string;
 }
 
-export { RequestBody, UserRequestBodySchema };
+export { AuthRequestBodySchema, RequestBody, UserRequestBodySchema };
