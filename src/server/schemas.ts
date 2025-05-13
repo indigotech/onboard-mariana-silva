@@ -37,6 +37,9 @@ const AuthRequestBodySchema = {
         password: {
           type: "string",
         },
+        rememberMe: {
+          type: "boolean",
+        },
       },
       required: ["email", "password"],
     },

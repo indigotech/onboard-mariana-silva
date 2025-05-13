@@ -18,7 +18,7 @@ after(async () => {
 });
 
 describe("POST /auth", function () {
-  it(`should return a token valid for ${process.env.TOKEN_TIMEOUT} seconds when login is successful`, async function () {
+  it(`should return a token valid for ${process.env.TOKEN_TIMEOUT} seconds when login is successful and rememberMe is set to false`, async function () {
     this.timeout(35000);
     const test_data = {
       id: 1,
@@ -49,6 +49,26 @@ describe("POST /auth", function () {
     } catch (error) {
       expect(error.name).to.be.equal("TokenExpiredError");
     }
+  });
+  it(`should return a token valid for 1 week when login is successful and rememberMe is set to true`, async function () {
+    const test_data = {
+      id: 15,
+      name: "caio",
+      email: "caio@yahoo.com",
+      password: "lalala3",
+      birthDate: "2004-10-10",
+    };
+    await axios.post("http://localhost:3000/users", test_data);
+    const body = {
+      email: test_data.email,
+      password: test_data.password,
+      rememberMe: true,
+    };
+    const reply = await axios.post("http://localhost:3000/auth", body);
+    const decoded = jwt.verify(reply.data.token, process.env.TOKEN_KEY);
+    expect(reply.status).to.be.equal(200);
+    expect(decoded.id).to.be.equal(test_data.id);
+    expect(decoded.exp - decoded.iat).to.be.equal(7 * 24 * 60 * 60);
   });
   it("should return an error if the email is not registered", async function () {
     const body = {
@@ -91,5 +111,4 @@ describe("POST /auth", function () {
       });
     }
   });
-  it("the token returned should be expired in 30 seconds", async function () {});
 });
