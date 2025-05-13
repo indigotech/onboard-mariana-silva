@@ -55,11 +55,11 @@ export function buildServer(): FastifyInstance {
     });
 
     if (!user) {
-      throw new CustomError("Email not registered on platform", "EML_02"); // add custom error in errorHandler later
+      throw new CustomError("Email not registered on platform", "EML_02");
     } else {
       const isPasswordValid = await compare(password, user.password);
       if (!isPasswordValid) {
-        throw new CustomError("Wrong password. Try again", "PSW_03"); // add custom error in errorHandler later
+        throw new CustomError("Wrong password. Try again", "PSW_03");
       }
     }
 
