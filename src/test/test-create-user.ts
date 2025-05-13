@@ -1,9 +1,9 @@
-import axios from "axios";
 import { compare } from "bcrypt-ts";
 import { expect } from "chai";
 import "mocha";
 import { start, stop } from "../setup";
 import { prisma } from "../setup-db";
+import axios from "./axios-for-test";
 
 before(async () => {
   await start();
@@ -60,16 +60,13 @@ describe("POST /users", function () {
       birthDate: "2004-10-10",
     };
     await axios.post("http://localhost:3000/users", body);
-    try {
-      await axios.post("http://localhost:3000/users", body);
-    } catch (error) {
-      expect(error.response.status).to.be.equal(400);
-      expect(error.response.data).to.be.deep.equal({
-        message: "The provided email address is already in use.",
-        code: "EML_01",
-        details: "Unique constraint failed on the fields: (`email`)",
-      });
-    }
+    const response = await axios.post("http://localhost:3000/users", body);
+    expect(response.status).to.be.equal(400);
+    expect(response.data).to.be.deep.equal({
+      message: "The provided email address is already in use.",
+      code: "EML_01",
+      details: "Unique constraint failed on the fields: (`email`)",
+    });
   });
   it("should return an error if the password has less than 6 characters", async function () {
     const body = {
@@ -78,16 +75,13 @@ describe("POST /users", function () {
       password: "a",
       birthDate: "2004-10-10",
     };
-    try {
-      await axios.post("http://localhost:3000/users", body);
-    } catch (error) {
-      expect(error.response.status).to.be.equal(400);
-      expect(error.response.data).to.be.deep.equal({
-        message: "Password must be at least 6 characters long.",
-        code: "PSW_01",
-        details: "must NOT have fewer than 6 characters",
-      });
-    }
+    const response = await axios.post("http://localhost:3000/users", body);
+    expect(response.status).to.be.equal(400);
+    expect(response.data).to.be.deep.equal({
+      message: "Password must be at least 6 characters long.",
+      code: "PSW_01",
+      details: "must NOT have fewer than 6 characters",
+    });
   });
   it("should return an error if the password has not letter or digits", async function () {
     const body = {
@@ -96,15 +90,12 @@ describe("POST /users", function () {
       password: "aaaaaaaaaa",
       birthDate: "2004-10-10",
     };
-    try {
-      await axios.post("http://localhost:3000/users", body);
-    } catch (error) {
-      expect(error.response.status).to.be.equal(400);
-      expect(error.response.data).to.be.deep.equal({
-        message: "Password must contain at least one letter and one number.",
-        code: "PSW_02",
-        details: 'must match pattern "(?=.*[A-Za-z])(?=.*\\d)"',
-      });
-    }
+    const response = await axios.post("http://localhost:3000/users", body);
+    expect(response.status).to.be.equal(400);
+    expect(response.data).to.be.deep.equal({
+      message: "Password must contain at least one letter and one number.",
+      code: "PSW_02",
+      details: 'must match pattern "(?=.*[A-Za-z])(?=.*\\d)"',
+    });
   });
 });
