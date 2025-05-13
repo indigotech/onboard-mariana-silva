@@ -28,11 +28,10 @@ export function buildServer(): FastifyInstance {
       request: FastifyRequest<{ Body: RequestBody }>,
       reply: FastifyReply
     ) => {
-      const { id, name, email, password, birthDate } = request.body;
+      const { name, email, password, birthDate } = request.body;
       const hashedPassword = await hash(password, 8);
       const newUser = await prisma.user.create({
         data: {
-          id: id || undefined,
           name: name,
           email: email,
           password: hashedPassword,
@@ -56,15 +55,15 @@ export function buildServer(): FastifyInstance {
 
     if (!user) {
       throw new CustomError("Email not registered on platform", "EML_02");
-    } else {
-      const isPasswordValid = await compare(password, user.password);
-      if (!isPasswordValid) {
-        throw new CustomError("Wrong password. Try again", "PSW_03");
-      }
+    }
+
+    const isPasswordValid = await compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new CustomError("Wrong password. Try again", "PSW_03");
     }
 
     const token = jwt.sign({ id: user.id }, process.env.TOKEN_KEY, {
-      expiresIn: Number(process.env.TOKEN_TIMEOUT) || 30,
+      expiresIn: Number(process.env.TOKEN_TIMEOUT) ?? 30,
     });
 
     return reply.code(200).send({
