@@ -25,7 +25,7 @@ describe("POST /auth", function () {
       name: "mariana",
       email: "mari@yahoo.com",
       password: "lalala3",
-      birthDate: new Date("2004-10-10"),
+      birthDate: "2004-10-10",
     };
     await axios.post("http://localhost:3000/users", test_data);
 
