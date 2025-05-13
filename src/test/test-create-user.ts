@@ -14,6 +14,10 @@ after(async () => {
   await stop();
 });
 
+afterEach(async () => {
+  await prisma.user.deleteMany();
+});
+
 describe("POST /users", function () {
   it("should create a new user", async function () {
     const body = {
@@ -47,7 +51,5 @@ describe("POST /users", function () {
 
     const isPasswordCorrect = await compare(body.password, user.password);
     expect(isPasswordCorrect).to.be.true;
-
-    await prisma.user.deleteMany();
   });
 });

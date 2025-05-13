@@ -1,8 +1,9 @@
 import { PrismaClient } from "@prisma/client";
 
-const prisma = new PrismaClient();
+let prisma: PrismaClient;
 
 export async function connectDB() {
+  prisma = new PrismaClient();
   await prisma.$connect();
 }
 
