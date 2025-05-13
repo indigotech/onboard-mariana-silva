@@ -26,6 +26,7 @@ describe("POST /users", function () {
       password: "senha123",
       birthDate: "2004-10-10",
     };
+
     const reply = await axios.post("http://localhost:3000/users", body);
 
     const user = await prisma.user.findUnique({
@@ -57,9 +58,10 @@ describe("POST /users", function () {
       name: "mariana",
       email: "mari@gmail.com",
       password: "senha123",
-      birthDate: "2004-10-10",
+      birthDate: new Date("2004-10-10"),
     };
-    await axios.post("http://localhost:3000/users", body);
+    await prisma.user.create({ data: body });
+
     const response = await axios.post("http://localhost:3000/users", body);
     expect(response.status).to.be.equal(400);
     expect(response.data).to.be.deep.equal({
