@@ -1,4 +1,4 @@
-const UserRequestBodySchema = {
+export const UserRequestBodySchema = {
   schema: {
     body: {
       type: "object",
@@ -26,7 +26,7 @@ const UserRequestBodySchema = {
   },
 };
 
-const AuthRequestBodySchema = {
+export const AuthRequestBodySchema = {
   schema: {
     body: {
       type: "object",
@@ -46,11 +46,9 @@ const AuthRequestBodySchema = {
   },
 };
 
-interface RequestBody {
+export interface RequestBody {
   name: string;
   email: string;
   password: string;
   birthDate: string;
 }
-
-export { AuthRequestBodySchema, RequestBody, UserRequestBodySchema };

@@ -35,7 +35,7 @@ export function buildServer(): FastifyInstance {
         throw new CustomError(
           "Authentication failed. Log in, then try again",
           "AUT_01",
-          "No authentication token was provided"
+          "No authentication token of type Bearer was provided"
         );
       }
       const token = authHeader.split(" ")[1];
@@ -84,10 +84,7 @@ export function buildServer(): FastifyInstance {
     }
 
     const token = jwt.sign({ id: user.id }, process.env.TOKEN_KEY, {
-      expiresIn:
-        rememberMe && rememberMe == true
-          ? "1w"
-          : Number(process.env.TOKEN_TIMEOUT) || 30,
+      expiresIn: rememberMe ? "1w" : Number(process.env.TOKEN_TIMEOUT) || 30,
     });
 
     return reply.code(200).send({
