@@ -18,6 +18,7 @@ const errorStatusCodes: Record<string, number> = {
   PSW_03: 400,
   AUT_01: 401,
   AUT_02: 401,
+  USR_01: 404,
 };
 
 export function errorHandler(

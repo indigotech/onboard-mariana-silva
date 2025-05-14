@@ -13,6 +13,26 @@ import {
   UserRequestBodySchema,
 } from "./schemas";
 
+function isAuthenticated(request) {
+  const authHeader = request.headers.authorization;
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new CustomError(
+      "Authentication failed. Log in, then try again",
+      "AUT_01",
+      "No authentication token of type Bearer was provided"
+    );
+  }
+  const token = authHeader.split(" ")[1];
+  const decoded = jwt.verify(token, process.env.TOKEN_KEY);
+  if (!decoded.id) {
+    throw new CustomError(
+      "Authentication failed. Try logging in once again",
+      "AUT_02",
+      "Decoded Payload from authentication token did not match the expected."
+    );
+  }
+}
+
 export function buildServer(): FastifyInstance {
   const app = fastify({});
 
@@ -29,24 +49,7 @@ export function buildServer(): FastifyInstance {
       request: FastifyRequest<{ Body: RequestBody }>,
       reply: FastifyReply
     ) => {
-      const authHeader = request.headers.authorization;
-
-      if (!authHeader || !authHeader.startsWith("Bearer ")) {
-        throw new CustomError(
-          "Authentication failed. Log in, then try again",
-          "AUT_01",
-          "No authentication token of type Bearer was provided"
-        );
-      }
-      const token = authHeader.split(" ")[1];
-      const decoded = jwt.verify(token, process.env.TOKEN_KEY);
-      if (!decoded.id) {
-        throw new CustomError(
-          "Authentication failed. Try logging in once again",
-          "AUT_02",
-          "Decoded Payload from authentication token did not match the expected."
-        );
-      }
+      isAuthenticated(request);
 
       const { id, name, email, password, birthDate } = request.body;
       const hashedPassword = await hash(password, 8);
@@ -98,5 +101,28 @@ export function buildServer(): FastifyInstance {
     });
   });
 
+  app.get(
+    "/users/:id",
+    async (request: FastifyRequest<{ Params: { id: string } }>, reply) => {
+      isAuthenticated(request);
+      const { id } = request.params;
+      const user = await prisma.user.findUnique({
+        where: { id: Number(id) },
+      });
+      if (!user) {
+        throw new CustomError(
+          "User not found",
+          "USR_01",
+          "User id was not found on the database"
+        );
+      }
+      return reply.code(200).send({
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        birthDate: user.birthDate,
+      });
+    }
+  );
   return app;
 }
