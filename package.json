@@ -8,7 +8,8 @@
     "start": "node  --no-warnings=ExperimentalWarning --loader ts-node/esm ./src/index.ts",
     "dev": "nodemon ./src/index.ts",
     "lint": "eslint ./src --ext .ts",
-    "test": "DOTENV_CONFIG_PATH=./.test.env mocha -r tsx -r dotenv/config src/test/*.ts"
+    "test": "DOTENV_CONFIG_PATH=./test.env mocha -r tsx -r dotenv/config src/test/*.ts",
+    "seed": "DOTENV_CONFIG_PATH=./test.env tsx -r dotenv/config src/test/seed.ts"
   },
   "keywords": [],
   "author": "",
@@ -20,6 +21,7 @@
   },
   "devDependencies": {
     "@eslint/js": "9.26.0",
+    "@faker-js/faker": "9.7.0",
     "@types/chai": "5.2.2",
     "@types/jsonwebtoken": "9.0.9",
     "@types/mocha": "10.0.10",
