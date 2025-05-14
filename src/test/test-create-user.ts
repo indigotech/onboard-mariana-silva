@@ -12,6 +12,10 @@ const test_data = {
   birthDate: "2004-10-10",
 };
 
+afterEach(async () => {
+  await prisma.user.deleteMany();
+});
+
 describe("POST /users", function () {
   it("should create a new user and return credentials + id, except from the password when user is authenticated", async function () {
     const payload = { id: 1 };
@@ -116,7 +120,7 @@ describe("POST /users", function () {
     expect(reply.data).to.be.deep.equal({
       message: "Authentication failed. Log in, then try again",
       code: "AUT_01",
-      details: "No authentication token was provided",
+      details: "No authentication token of type Bearer was provided",
     });
   });
 

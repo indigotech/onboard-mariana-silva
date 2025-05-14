@@ -35,7 +35,7 @@ export function buildServer(): FastifyInstance {
         throw new CustomError(
           "Authentication failed. Log in, then try again",
           "AUT_01",
-          "No authentication token was provided"
+          "No authentication token of type Bearer was provided"
         );
       }
       const token = authHeader.split(" ")[1];
