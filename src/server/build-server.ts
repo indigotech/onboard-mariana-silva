@@ -8,12 +8,13 @@ import jwt from "jsonwebtoken";
 import { prisma } from "../setup-db";
 import { CustomError, errorHandler } from "./error-handler";
 import {
-  AuthRequestBodySchema,
-  RequestBody,
-  UserRequestBodySchema,
+  GetUserRequestBody,
+  PostAuthBodySchema,
+  PostUserBodySchema,
+  PostUserRequestBody,
 } from "./schemas";
 
-function isAuthenticated(request) {
+function isAuthenticated(request: FastifyRequest) {
   const authHeader = request.headers.authorization;
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     throw new CustomError(
@@ -44,9 +45,9 @@ export function buildServer(): FastifyInstance {
 
   app.post(
     "/users",
-    UserRequestBodySchema,
+    PostUserBodySchema,
     async (
-      request: FastifyRequest<{ Body: RequestBody }>,
+      request: FastifyRequest<{ Body: PostUserRequestBody }>,
       reply: FastifyReply
     ) => {
       isAuthenticated(request);
@@ -70,36 +71,42 @@ export function buildServer(): FastifyInstance {
       });
     }
   );
+  app.post(
+    "/auth",
+    PostAuthBodySchema,
+    async (
+      request: FastifyRequest<{ Body: GetUserRequestBody }>,
+      reply: FastifyReply
+    ) => {
+      const { email, password, rememberMe } = request.body;
+      const user = await prisma.user.findUnique({
+        where: { email },
+      });
 
-  app.post("/auth", AuthRequestBodySchema, async (request, reply) => {
-    const { email, password, rememberMe } = request.body;
-    const user = await prisma.user.findUnique({
-      where: { email },
-    });
-
-    if (!user) {
-      throw new CustomError("Email not registered on platform", "EML_02");
-    } else {
-      const isPasswordValid = await compare(password, user.password);
-      if (!isPasswordValid) {
-        throw new CustomError("Wrong password. Try again", "PSW_03");
+      if (!user) {
+        throw new CustomError("Email not registered on platform", "EML_02");
+      } else {
+        const isPasswordValid = await compare(password, user.password);
+        if (!isPasswordValid) {
+          throw new CustomError("Wrong password. Try again", "PSW_03");
+        }
       }
+
+      const token = jwt.sign({ id: user.id }, process.env.TOKEN_KEY, {
+        expiresIn: rememberMe ? "1w" : Number(process.env.TOKEN_TIMEOUT) || 30,
+      });
+
+      return reply.code(200).send({
+        user: {
+          id: user.id,
+          name: user.name,
+          email: user.email,
+          birthDate: user.birthDate,
+        },
+        token: token,
+      });
     }
-
-    const token = jwt.sign({ id: user.id }, process.env.TOKEN_KEY, {
-      expiresIn: rememberMe ? "1w" : Number(process.env.TOKEN_TIMEOUT) || 30,
-    });
-
-    return reply.code(200).send({
-      user: {
-        id: user.id,
-        name: user.name,
-        email: user.email,
-        birthDate: user.birthDate,
-      },
-      token: token,
-    });
-  });
+  );
 
   app.get(
     "/users/:id",
