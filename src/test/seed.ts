@@ -7,7 +7,6 @@ const prisma = new PrismaClient();
 faker.seed(0);
 
 async function main() {
-  await prisma.$connect();
   console.log("Start seeding...");
 
   await prisma.$executeRaw`TRUNCATE TABLE "User" RESTART IDENTITY`;
