@@ -9,7 +9,7 @@
     "dev": "nodemon ./src/index.ts",
     "lint": "eslint ./src --ext .ts",
     "test": "DOTENV_CONFIG_PATH=./test.env mocha -r tsx -r dotenv/config src/test/*.ts",
-    "seed": "DOTENV_CONFIG_PATH=./test.env tsx -r dotenv/config src/test/seed.ts"
+    "seeds": "DOTENV_CONFIG_PATH=./test.env tsx -r dotenv/config src/test/seed.ts"
   },
   "keywords": [],
   "author": "",
