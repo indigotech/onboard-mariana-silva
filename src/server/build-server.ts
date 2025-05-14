@@ -105,9 +105,20 @@ export function buildServer(): FastifyInstance {
     async (request: FastifyRequest<{ Params: { id: string } }>, reply) => {
       isAuthenticated(request);
       const { id } = request.params;
+
+      const userId = Number(id);
+      if (isNaN(userId)) {
+        throw new CustomError(
+          "Invalid ID. User ID must be a number",
+          "USR_02",
+          "The user ID must be an integer"
+        );
+      }
+
       const user = await prisma.user.findUnique({
         where: { id: Number(id) },
       });
+
       if (!user) {
         throw new CustomError(
           "User not found",

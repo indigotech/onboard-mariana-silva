@@ -55,6 +55,21 @@ describe("GET /users/:id", function () {
       birthDate: new Date(body.birthDate).toISOString(),
     });
   });
+  it("should return an error if the id is not a number", async function () {
+    const payload = { id: 1 };
+    const token = jwt.sign(payload, process.env.TOKEN_KEY);
+    const reply = await axios.get("http://localhost:3000/users/abc", {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+    expect(reply.status).to.be.equal(400);
+    expect(reply.data).to.be.deep.equal({
+      message: "Invalid ID. User ID must be a number",
+      code: "USR_02",
+      details: "The user ID must be an integer",
+    });
+  });
   it("should return an error if the id is not found", async function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, process.env.TOKEN_KEY);
