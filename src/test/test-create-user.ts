@@ -17,7 +17,7 @@ afterEach(async () => {
 });
 
 describe("POST /users", function () {
-  it("should create a new user and return credentials + id, except from the password when user is authenticated", async function () {
+  it("should create a new user and return credentials + id (except from the password) when user is authenticated", async function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, process.env.TOKEN_KEY);
 
