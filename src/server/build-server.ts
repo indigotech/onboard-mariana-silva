@@ -146,13 +146,17 @@ export function buildServer(): FastifyInstance {
   app.get("/users", async (request, reply) => {
     isAuthenticated(request);
     const { limit } = request.query;
-    const userLimit = isNaN(Number(limit)) ? 20 : Number(limit);
-    if (userLimit < 0) {
+    let userLimit: number;
+    if (limit === undefined) {
+      userLimit = 20;
+    } else if (isNaN(+limit) || +limit < 0) {
       throw new CustomError(
         "Invalid limit. Limit must be a non-negative number.",
         "USR_03",
         "The limit must be a non-negative integer"
       );
+    } else {
+      userLimit = Number(limit);
     }
     const users = await prisma.user.findMany({
       take: userLimit,
