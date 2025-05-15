@@ -22,6 +22,7 @@ const errorStatusCodes: Record<string, number> = {
   USR_01: 404,
   USR_02: 400,
   USR_03: 400,
+  USR_04: 400,
 };
 
 export function errorHandler(
