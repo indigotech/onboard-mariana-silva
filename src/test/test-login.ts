@@ -15,26 +15,35 @@ after(async () => {
   await stop();
 });
 
+afterEach(async () => {
+  await prisma.user.deleteMany();
+});
+
+const test_data = {
+  name: "mariana",
+  email: "mari@yahoo.com",
+  password: "lalala3",
+  birthDate: "2004-10-10",
+};
+
+async function createUser() {
+  await prisma.user.create({
+    data: {
+      name: test_data.name,
+      email: test_data.email,
+      password: await hash(test_data.password, 8),
+      birthDate: new Date(test_data.birthDate),
+    },
+  });
+  const user = await prisma.user.findUnique({
+    where: { email: test_data.email },
+  });
+  return user;
+}
+
 describe("POST /auth", function () {
   it(`should return a token valid for ${process.env.TOKEN_TIMEOUT} seconds when login is successful`, async function () {
-    const test_data = {
-      name: "mariana",
-      email: "mari@yahoo.com",
-      password: "lalala3",
-      birthDate: "2004-10-10",
-    };
-    await prisma.user.create({
-      data: {
-        name: test_data.name,
-        email: test_data.email,
-        password: await hash(test_data.password, 8),
-        birthDate: new Date(test_data.birthDate),
-      },
-    });
-    const user = await prisma.user.findUnique({
-      where: { email: test_data.email },
-    });
-
+    const user = await createUser();
     const body = {
       email: test_data.email,
       password: test_data.password,
@@ -42,6 +51,7 @@ describe("POST /auth", function () {
 
     const reply = await axios.post("http://localhost:3000/auth", body);
     const decoded = jwt.verify(reply.data.token, process.env.TOKEN_KEY);
+
     expect(reply.status).to.be.equal(200);
     expect(decoded.id).to.be.equal(user.id);
     expect(decoded.exp - decoded.iat).to.be.equal(
@@ -51,9 +61,11 @@ describe("POST /auth", function () {
   it("should return an error if the email is not registered", async function () {
     const body = {
       email: "mari@gmail.com",
-      password: "senha123",
+      password: test_data.password,
     };
+
     const response = await axios.post("http://localhost:3000/auth", body);
+
     expect(response.status).to.be.equal(400);
     expect(response.data).to.be.deep.equal({
       message: "Email not registered on platform",
@@ -61,27 +73,14 @@ describe("POST /auth", function () {
     });
   });
   it("should return an error if the password is incorrect", async function () {
-    const test_data = {
-      name: "beatriz",
-      email: "bia@yahoo.com",
-      password: "lalala3",
-      birthDate: "2005-02-27",
-    };
-    await prisma.user.create({
-      data: {
-        name: test_data.name,
-        email: test_data.email,
-        password: await hash(test_data.password, 8),
-        birthDate: new Date(test_data.birthDate),
-      },
-    });
-
+    await createUser();
     const body = {
       email: test_data.email,
       password: "wrongpassword",
     };
 
     const response = await axios.post("http://localhost:3000/auth", body);
+
     expect(response.status).to.be.equal(400);
     expect(response.data).to.be.deep.equal({
       message: "Wrong password. Try again",
