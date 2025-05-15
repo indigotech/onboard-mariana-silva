@@ -23,6 +23,8 @@ function config(token: string) {
   };
 }
 
+const validToken = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
+
 async function getUsersList(take: number) {
   const users = await prisma.user.findMany({
     take,
@@ -40,12 +42,11 @@ async function getUsersList(take: number) {
 describe("GET /users", function () {
   it("should return a list of users when passing a number limit", async function () {
     const take = 15;
-    const token = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
     const users = await getUsersList(take);
 
     const reply = await axios.get(
       `http://localhost:3000/users?limit=${take}`,
-      config(token)
+      config(validToken)
     );
 
     expect(reply.status).to.be.equal(200);
@@ -54,10 +55,12 @@ describe("GET /users", function () {
   });
 
   it("should return a list of users with default limit when not passing a limit", async function () {
-    const token = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
     const users = await getUsersList(20);
 
-    const reply = await axios.get("http://localhost:3000/users", config(token));
+    const reply = await axios.get(
+      "http://localhost:3000/users",
+      config(validToken)
+    );
 
     expect(reply.status).to.be.equal(200);
     expect(reply.data).to.be.deep.equal({ users: users });
@@ -65,11 +68,9 @@ describe("GET /users", function () {
   });
 
   it("should return an error when passing a limit that is not a non-negative number", async function () {
-    const token = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
-
     const reply = await axios.get(
       "http://localhost:3000/users?limit=abc",
-      config(token)
+      config(validToken)
     );
 
     expect(reply.status).to.be.equal(400);
