@@ -40,13 +40,34 @@ export async function listUsersRoute(
     orderBy: { name: "asc" },
   });
   const usersData = users.map(({ password, ...user }) => user);
+  const previousUser = await getPreviousUser(users);
+  const nextUser = await getNextUser(users);
+
   const total = await prisma.user.count();
 
   return reply.status(200).send({
     users: usersData,
     total: total,
     offset: userOffset,
-    hasUsersBefore: userOffset > 0,
-    hasUsersAfter: userOffset + userLimit < total,
+    previous: previousUser ?? null,
+    next: nextUser ?? null,
   });
+}
+
+export async function getPreviousUser(users) {
+  const previousUserName = users[0]?.name;
+  const previousUser = await prisma.user.findFirst({
+    orderBy: { name: "asc" },
+    where: { name: { lt: previousUserName } },
+  });
+  return previousUser?.id;
+}
+
+export async function getNextUser(users) {
+  const nextUserName = users[users.length - 1]?.name;
+  const nextUser = await prisma.user.findMany({
+    orderBy: { name: "asc" },
+    where: { name: { gt: nextUserName } },
+  });
+  return nextUser[0]?.id;
 }
