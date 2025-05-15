@@ -1,22 +1,8 @@
 import { compare } from "bcrypt-ts";
 import { expect } from "chai";
 import "mocha";
-import { start, stop } from "../setup";
 import { prisma } from "../setup-db";
 import axios from "./axios-for-test";
-
-before(async () => {
-  await start();
-});
-
-after(async () => {
-  await prisma.user.deleteMany();
-  await stop();
-});
-
-afterEach(async () => {
-  await prisma.user.deleteMany();
-});
 
 describe("POST /users", function () {
   it("should create a new user and return credentials + id, except from the password", async function () {

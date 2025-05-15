@@ -2,22 +2,8 @@ import { hash } from "bcrypt-ts";
 import { expect } from "chai";
 import jwt from "jsonwebtoken";
 import "mocha";
-import { start, stop } from "../setup";
 import { prisma } from "../setup-db";
 import axios from "./axios-for-test";
-
-before(async () => {
-  await start();
-});
-
-after(async () => {
-  await prisma.user.deleteMany();
-  await stop();
-});
-
-afterEach(async () => {
-  await prisma.user.deleteMany();
-});
 
 const test_data = {
   name: "mariana",
