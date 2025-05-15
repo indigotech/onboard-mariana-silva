@@ -1,15 +1,6 @@
 import axios from "axios";
 import { expect } from "chai";
 import "mocha";
-import { start, stop } from "../setup";
-
-before(async () => {
-  await start();
-});
-
-after(async () => {
-  await stop();
-});
 
 describe("GET /hello", function () {
   it("should return a Hello World! message", async function () {

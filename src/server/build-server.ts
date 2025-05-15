@@ -1,13 +1,17 @@
-import { hash } from "bcrypt-ts";
+import { compare, hash } from "bcrypt-ts";
 import fastify, {
   FastifyInstance,
   FastifyReply,
   FastifyRequest,
 } from "fastify";
+import jwt from "jsonwebtoken";
 import { prisma } from "../setup-db";
-import { errorHandler } from "./error-handler";
-import { RequestBody, UserRequestBodySchema } from "./schemas";
-
+import { CustomError, errorHandler } from "./error-handler";
+import {
+  AuthRequestBodySchema,
+  RequestBody,
+  UserRequestBodySchema,
+} from "./schemas";
 export function buildServer(): FastifyInstance {
   const app = fastify({});
 
@@ -42,5 +46,36 @@ export function buildServer(): FastifyInstance {
       });
     }
   );
+
+  app.post("/auth", AuthRequestBodySchema, async (request, reply) => {
+    const { email, password } = request.body;
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      throw new CustomError("Email not registered on platform", "EML_02");
+    }
+
+    const isPasswordValid = await compare(password, user.password);
+    if (!isPasswordValid) {
+      throw new CustomError("Wrong password. Try again", "PSW_03");
+    }
+
+    const token = jwt.sign({ id: user.id }, process.env.TOKEN_KEY, {
+      expiresIn: Number(process.env.TOKEN_TIMEOUT) ?? 30,
+    });
+
+    return reply.code(200).send({
+      user: {
+        id: user.id,
+        name: user.name,
+        email: user.email,
+        birthDate: user.birthDate,
+      },
+      token: token,
+    });
+  });
+
   return app;
 }
