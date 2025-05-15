@@ -3,6 +3,7 @@ import "mocha";
 import { prisma } from "../setup-db";
 
 import { expect } from "chai";
+import { getNextUser, getPreviousUser } from "../server/route-get-users";
 import { start, stop } from "../setup";
 import axios from "./axios-for-test";
 
@@ -25,9 +26,10 @@ function config(token: string) {
 
 const validToken = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
 
-async function getUsersList(take: number) {
+async function getUsersList(take: number = 20, offset: number = 0) {
   const users = await prisma.user.findMany({
     take,
+    skip: offset,
     orderBy: {
       name: "asc",
     },
@@ -44,6 +46,7 @@ describe("GET /users", function () {
     const take = 15;
     const users = await getUsersList(take);
     const total = await prisma.user.count();
+    const nextUser = await getNextUser(users);
 
     const reply = await axios.get(
       `http://localhost:3000/users?limit=${take}`,
@@ -55,8 +58,8 @@ describe("GET /users", function () {
       users: users,
       total: total,
       offset: 0,
-      hasUsersBefore: false,
-      hasUsersAfter: take < total,
+      previous: null,
+      next: nextUser,
     });
     expect(reply.data.users.length).to.be.equal(take);
   });
@@ -64,13 +67,14 @@ describe("GET /users", function () {
   it("should return a list of users with specific length and an offset when passing a number offset and a number limit", async function () {
     const take = 15;
     const offset = 5;
-    const token = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
-    const users = await getUsersList(take);
+    const users = await getUsersList(take, offset);
     const total = await prisma.user.count();
+    const previousUser = await getPreviousUser(users);
+    const nextUser = await getNextUser(users);
 
     const reply = await axios.get(
       `http://localhost:3000/users?limit=${take}&offset=${offset}`,
-      config(token)
+      config(validToken)
     );
 
     expect(reply.status).to.be.equal(200);
@@ -78,14 +82,17 @@ describe("GET /users", function () {
       users: users,
       total: total,
       offset: offset,
-      hasUsersBefore: offset > 0,
-      hasUsersAfter: offset + take < total,
+      previous: previousUser,
+      next: nextUser,
     });
     expect(reply.data.users.length).to.be.equal(take);
   });
 
   it("should return a list of users with default limit when not passing a limit", async function () {
-    const users = await getUsersList(20);
+    const users = await getUsersList();
+    const total = await prisma.user.count();
+    const previousUser = await getPreviousUser(users);
+    const nextUser = await getNextUser(users);
 
     const reply = await axios.get(
       "http://localhost:3000/users",
@@ -93,7 +100,13 @@ describe("GET /users", function () {
     );
 
     expect(reply.status).to.be.equal(200);
-    expect(reply.data).to.be.deep.equal({ users: users });
+    expect(reply.data).to.be.deep.equal({
+      users: users,
+      total: total,
+      offset: 0,
+      previous: null,
+      next: nextUser,
+    });
     expect(reply.data.users.length).to.be.equal(20);
   });
 
