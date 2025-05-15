@@ -12,10 +12,6 @@ const test_data = {
   birthDate: "2004-10-10",
 };
 
-afterEach(async () => {
-  await prisma.user.deleteMany();
-});
-
 describe("POST /users", function () {
   it("should create a new user and return credentials + id (except from the password) when user is authenticated", async function () {
     const payload = { id: 1 };
@@ -29,6 +25,7 @@ describe("POST /users", function () {
     const user = await prisma.user.findUnique({
       where: { email: test_data.email },
     });
+
     const isPasswordCorrect = await compare(test_data.password, user.password);
 
     expect(reply.status).to.be.equal(201);
@@ -89,13 +86,14 @@ describe("POST /users", function () {
       details: "must NOT have fewer than 6 characters",
     });
   });
+
   it("should return an error if the password has not letter or digits", async function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, process.env.TOKEN_KEY);
     const body = {
       name: test_data.name,
       email: test_data.email,
-      password: "aaaaaaaaaa",
+      password: "password",
       birthDate: test_data.birthDate,
     };
 
