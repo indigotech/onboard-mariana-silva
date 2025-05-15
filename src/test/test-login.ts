@@ -52,6 +52,7 @@ describe("POST /auth", function () {
       Number(process.env.TOKEN_TIMEOUT) ?? 30
     );
   });
+
   it("should return an error if the email is not registered", async function () {
     const body = {
       email: "mari@gmail.com",
@@ -66,6 +67,7 @@ describe("POST /auth", function () {
       code: "EML_02",
     });
   });
+
   it("should return an error if the password is incorrect", async function () {
     await createUser();
     const body = {
