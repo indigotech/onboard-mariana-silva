@@ -19,27 +19,32 @@ afterEach(async () => {
   await prisma.user.deleteMany();
 });
 
+const test_data = {
+  name: "mariana",
+  email: "mari@gmail.com",
+  password: "senha123",
+  birthDate: "2004-10-10",
+};
+
+async function createUser() {
+  await prisma.user.create({
+    data: {
+      name: test_data.name,
+      email: test_data.email,
+      password: await hash(test_data.password, 8),
+      birthDate: new Date(test_data.birthDate),
+    },
+  });
+  const user = await prisma.user.findUnique({
+    where: { email: test_data.email },
+  });
+  return user;
+}
 describe("GET /users/:id", function () {
   it("should return data requested when the id is registered and the user is authenticated", async function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, process.env.TOKEN_KEY);
-    const body = {
-      name: "mariana",
-      email: "mari@gmail.com",
-      password: "senha123",
-      birthDate: "2004-10-10",
-    };
-    await prisma.user.create({
-      data: {
-        name: body.name,
-        email: body.email,
-        password: await hash(body.password, 8),
-        birthDate: new Date(body.birthDate),
-      },
-    });
-    const user = await prisma.user.findUnique({
-      where: { email: body.email },
-    });
+    const user = await createUser();
 
     const reply = await axios.get(`http://localhost:3000/users/${user?.id}`, {
       headers: {
@@ -50,9 +55,9 @@ describe("GET /users/:id", function () {
     expect(reply.status).to.be.equal(200);
     expect(reply.data).to.be.deep.equal({
       id: user?.id,
-      name: body.name,
-      email: body.email,
-      birthDate: new Date(body.birthDate).toISOString(),
+      name: test_data.name,
+      email: test_data.email,
+      birthDate: new Date(test_data.birthDate).toISOString(),
     });
   });
   it("should return an error if the id is not a number", async function () {
