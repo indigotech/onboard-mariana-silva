@@ -4,19 +4,9 @@ import { prisma } from "../setup-db";
 
 import { expect } from "chai";
 import { getNextUser, getPreviousUser } from "../server/route-get-users";
-import { start, stop } from "../setup";
 import utils, { configRequestToken } from "./test-utils";
 
 const { testAxios: axios, validToken } = utils;
-
-before(async () => {
-  await start();
-});
-
-after(async () => {
-  await prisma.user.deleteMany();
-  await stop();
-});
 
 function config(token: string) {
   return {
