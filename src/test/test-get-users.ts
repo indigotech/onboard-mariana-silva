@@ -44,7 +44,7 @@ async function getUsersList(take: number = 20, offset: number = 0) {
 }
 
 describe("GET /users", function () {
-  it("should return a list of users with specific length and an offset when passing a number offset and a number limit", async function () {
+  it("should return a paginated list of users with specified limit and offset", async function () {
     const take = 15;
     const offset = 5;
     const users = await getUsersList(take, offset);
@@ -68,7 +68,7 @@ describe("GET /users", function () {
     expect(reply.data.users.length).to.be.equal(take);
   });
 
-  it("should return a list of the first users with specific length when passing a number limit and no offset", async function () {
+  it("should return the first set of users with specified limit and no offset", async function () {
     const take = 15;
     const users = await getUsersList(take);
     const total = await prisma.user.count();
@@ -90,7 +90,7 @@ describe("GET /users", function () {
     expect(reply.data.users.length).to.be.equal(take);
   });
 
-  it("should return a list of users with default length and an offset when passing only a number offset and no limit", async function () {
+  it("should return a paginated list starting from the specified offset with the default limit", async function () {
     const offset = 5;
     const users = await getUsersList(20, offset);
     const total = await prisma.user.count();
@@ -113,7 +113,7 @@ describe("GET /users", function () {
     expect(reply.data.users.length).to.be.equal(20);
   });
 
-  it("should return a list of users with default limit and no offset when not passing both", async function () {
+  it("should return the first set of users with the default limit when no limit or offset is provided", async function () {
     const users = await getUsersList();
     const total = await prisma.user.count();
     const previousUser = await getPreviousUser(users);
