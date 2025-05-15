@@ -32,7 +32,7 @@ async function createUser() {
       name: test_data.name,
       email: test_data.email,
       password: await hash(test_data.password, 8),
-      birthDate: new Date(test_data.birthDate),
+      birthDate: new Date(test_data.birthDate).toISOString(),
     },
   });
   const user = await prisma.user.findUnique({
@@ -51,8 +51,16 @@ describe("POST /auth", function () {
 
     const reply = await axios.post("http://localhost:3000/auth", body);
     const decoded = jwt.verify(reply.data.token, process.env.TOKEN_KEY);
-
     expect(reply.status).to.be.equal(200);
+    expect(reply.data).to.be.deep.equal({
+      user: {
+        id: user.id,
+        name: test_data.name,
+        email: test_data.email,
+        birthDate: new Date(test_data.birthDate).toISOString(),
+      },
+      token: reply.data.token,
+    });
     expect(decoded.id).to.be.equal(user.id);
     expect(decoded.exp - decoded.iat).to.be.equal(
       Number(process.env.TOKEN_TIMEOUT) ?? 30
