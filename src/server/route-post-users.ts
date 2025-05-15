@@ -2,7 +2,7 @@ import { hash } from "bcrypt-ts";
 import { FastifyReply, FastifyRequest } from "fastify";
 import { prisma } from "../setup-db";
 import { PostUserRequestBody } from "./schemas";
-import { validateAuthentication } from "./validate-authentication";
+import { replyUserData, validateAuthentication } from "./utils";
 
 export async function postUserRoute(
   request: FastifyRequest<{ Body: PostUserRequestBody }>,
@@ -20,10 +20,5 @@ export async function postUserRoute(
       birthDate: new Date(birthDate),
     },
   });
-  return reply.code(201).send({
-    id: newUser.id,
-    name: newUser.name,
-    email: newUser.email,
-    birthdate: newUser.birthDate,
-  });
+  return replyUserData(newUser, 201, reply);
 }

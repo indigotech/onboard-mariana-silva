@@ -1,5 +1,6 @@
-import { FastifyRequest } from "fastify";
+import { FastifyReply, FastifyRequest } from "fastify";
 import jwt from "jsonwebtoken";
+import { User } from "./../generated/prisma/index.d";
 import { CustomError } from "./error-handler";
 
 export function validateAuthentication(request: FastifyRequest) {
@@ -20,4 +21,21 @@ export function validateAuthentication(request: FastifyRequest) {
       "Decoded Payload from authentication token did not match the expected."
     );
   }
+}
+
+interface User {
+  id: number;
+  name: string;
+  email: string;
+  password: string;
+  birthDate: Date;
+}
+
+export function replyUserData(user: User, status: number, reply: FastifyReply) {
+  return reply.code(status).send({
+    id: user.id,
+    name: user.name,
+    email: user.email,
+    birthDate: user.birthDate,
+  });
 }

@@ -3,10 +3,10 @@ import { FastifyReply, FastifyRequest } from "fastify";
 import jwt from "jsonwebtoken";
 import { prisma } from "../setup-db";
 import { CustomError } from "./error-handler";
-import { GetUserRequestBody } from "./schemas";
+import { PostAuthRequestBody } from "./schemas";
 
 export async function postAuthRoute(
-  request: FastifyRequest<{ Body: GetUserRequestBody }>,
+  request: FastifyRequest<{ Body: PostAuthRequestBody }>,
   reply: FastifyReply
 ) {
   const { email, password, rememberMe } = request.body;

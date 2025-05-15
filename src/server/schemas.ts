@@ -53,8 +53,8 @@ export interface PostUserRequestBody {
   birthDate: string;
 }
 
-export interface GetUserRequestBody {
+export interface PostAuthRequestBody {
   email: string;
   password: string;
-  rememberMe: boolean;
+  rememberMe?: boolean;
 }

@@ -1,7 +1,7 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import { prisma } from "../setup-db";
 import { CustomError } from "./error-handler";
-import { validateAuthentication } from "./validate-authentication";
+import { replyUserData, validateAuthentication } from "./utils";
 
 export async function getUserRoute(
   request: FastifyRequest<{ Params: { id: string } }>,
@@ -20,7 +20,7 @@ export async function getUserRoute(
   }
 
   const user = await prisma.user.findUnique({
-    where: { id: Number(id) },
+    where: { id: userId },
   });
 
   if (!user) {
@@ -30,10 +30,5 @@ export async function getUserRoute(
       "User id was not found on the database"
     );
   }
-  return reply.code(200).send({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    birthDate: user.birthDate,
-  });
+  return replyUserData(user, 200, reply);
 }
