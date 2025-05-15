@@ -11,11 +11,11 @@ export async function getUserRoute(
   const { id } = request.params;
 
   const userId = Number(id);
-  if (isNaN(userId)) {
+  if (isNaN(userId) || userId <= 0) {
     throw new CustomError(
-      "Invalid ID. User ID must be a number",
+      "Invalid ID. User ID must be a positive number",
       "USR_02",
-      "The user ID must be an integer"
+      "The user ID must be a positive integer"
     );
   }
 

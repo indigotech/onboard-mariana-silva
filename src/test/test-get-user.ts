@@ -1,23 +1,8 @@
-import { hash } from "bcrypt-ts";
 import { expect } from "chai";
 import jwt from "jsonwebtoken";
 import "mocha";
-import { start, stop } from "../setup";
-import { prisma } from "../setup-db";
 import axios from "./axios-for-test";
-
-before(async () => {
-  await start();
-});
-
-after(async () => {
-  await prisma.user.deleteMany();
-  await stop();
-});
-
-afterEach(async () => {
-  await prisma.user.deleteMany();
-});
+import { createUser } from "./test-utils";
 
 const test_data = {
   name: "mariana",
@@ -26,25 +11,11 @@ const test_data = {
   birthDate: "2004-10-10",
 };
 
-async function createUser() {
-  await prisma.user.create({
-    data: {
-      name: test_data.name,
-      email: test_data.email,
-      password: await hash(test_data.password, 8),
-      birthDate: new Date(test_data.birthDate),
-    },
-  });
-  const user = await prisma.user.findUnique({
-    where: { email: test_data.email },
-  });
-  return user;
-}
 describe("GET /users/:id", function () {
   it("should return data requested when the id is registered and the user is authenticated", async function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, process.env.TOKEN_KEY);
-    const user = await createUser();
+    const user = await createUser(test_data);
 
     const reply = await axios.get(`http://localhost:3000/users/${user?.id}`, {
       headers: {
@@ -60,29 +31,35 @@ describe("GET /users/:id", function () {
       birthDate: new Date(test_data.birthDate).toISOString(),
     });
   });
+
   it("should return an error if the id is not a number", async function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, process.env.TOKEN_KEY);
+
     const reply = await axios.get("http://localhost:3000/users/abc", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+
     expect(reply.status).to.be.equal(400);
     expect(reply.data).to.be.deep.equal({
-      message: "Invalid ID. User ID must be a number",
+      message: "Invalid ID. User ID must be a positive number",
       code: "USR_02",
-      details: "The user ID must be an integer",
+      details: "The user ID must be a positive integer",
     });
   });
+
   it("should return an error if the id is not found", async function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, process.env.TOKEN_KEY);
+
     const reply = await axios.get("http://localhost:3000/users/1", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+
     expect(reply.status).to.be.equal(404);
     expect(reply.data).to.be.deep.equal({
       message: "User not found",
@@ -90,8 +67,10 @@ describe("GET /users/:id", function () {
       details: "User id was not found on the database",
     });
   });
+
   it("should return an error if request has no authentication token", async function () {
     const response = await axios.get("http://localhost:3000/users/2");
+
     expect(response.status).to.be.equal(401);
     expect(response.data).to.be.deep.equal({
       message: "Authentication failed. Log in, then try again",
@@ -99,14 +78,17 @@ describe("GET /users/:id", function () {
       details: "No authentication token of type Bearer was provided",
     });
   });
+
   it("should return an error if authentication token is invalid", async function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, "wrong_secret");
+
     const response = await axios.get("http://localhost:3000/users/3", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+
     expect(response.status).to.be.equal(401);
     expect(response.data).to.be.deep.equal({
       message: "Authentication failed. Try logging in again",
@@ -114,14 +96,17 @@ describe("GET /users/:id", function () {
       details: "invalid signature",
     });
   });
+
   it("should return an error if authentication token is expired", async function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, process.env.TOKEN_KEY, { expiresIn: -1 });
+
     const response = await axios.get("http://localhost:3000/users/4", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+
     expect(response.status).to.be.equal(401);
     expect(response.data).to.be.deep.equal({
       message: "Authentication failed. Try logging in again",
@@ -132,11 +117,13 @@ describe("GET /users/:id", function () {
   it("should return an error if authentication token has an invalid payload", async function () {
     const payload = { name: "mariana" };
     const token = jwt.sign(payload, process.env.TOKEN_KEY);
+
     const response = await axios.get("http://localhost:3000/users/5", {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     });
+
     expect(response.status).to.be.equal(401);
     expect(response.data).to.be.deep.equal({
       message: "Authentication failed. Try logging in once again",
