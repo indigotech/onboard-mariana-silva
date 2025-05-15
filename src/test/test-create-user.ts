@@ -33,7 +33,7 @@ describe("POST /users", function () {
       id: user.id,
       name: "mariana",
       email: "mari@gmail.com",
-      birthdate: new Date(test_data.birthDate).toISOString(),
+      birthDate: new Date(test_data.birthDate).toISOString(),
     });
     expect(user).to.deep.include({
       name: "mariana",
