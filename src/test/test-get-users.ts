@@ -15,15 +15,21 @@ after(async () => {
   await stop();
 });
 
+function config(token: string) {
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+}
+
 describe("GET /users", function () {
   it("should return a list of users when passing a number limit", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY);
-    const reply = await axios.get("http://localhost:3000/users?limit=15", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const token = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
+    const reply = await axios.get(
+      "http://localhost:3000/users?limit=15",
+      config(token)
+    );
     const users = await prisma.user.findMany({
       take: 15,
       orderBy: {
@@ -39,13 +45,11 @@ describe("GET /users", function () {
     expect(reply.data.users.length).to.be.equal(15);
   });
   it("should return an error when passing a limit that is not a non-negative number", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY);
-    const reply = await axios.get("http://localhost:3000/users?limit=abc", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const token = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
+    const reply = await axios.get(
+      "http://localhost:3000/users?limit=abc",
+      config(token)
+    );
     expect(reply.status).to.be.equal(400);
     expect(reply.data).to.be.deep.equal({
       message: "Invalid limit. Limit must be a non-negative number.",
@@ -54,13 +58,8 @@ describe("GET /users", function () {
     });
   });
   it("should return a list of users with default limit when not passing a limit", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY);
-    const reply = await axios.get("http://localhost:3000/users", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const token = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
+    const reply = await axios.get("http://localhost:3000/users", config(token));
     const users = await prisma.user.findMany({
       take: 20,
       orderBy: {
@@ -86,13 +85,8 @@ describe("GET /users", function () {
     });
   });
   it("should return an error if authentication token is invalid", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, "wrong_secret");
-    const reply = await axios.get("http://localhost:3000/users", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const token = jwt.sign({ id: 1 }, "wrong_secret");
+    const reply = await axios.get("http://localhost:3000/users", config(token));
     expect(reply.status).to.be.equal(401);
     expect(reply.data).to.be.deep.equal({
       message: "Authentication failed. Try logging in again",
@@ -101,13 +95,8 @@ describe("GET /users", function () {
     });
   });
   it("should return an error if authentication token is expired", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY, { expiresIn: -1 });
-    const reply = await axios.get("http://localhost:3000/users", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const token = jwt.sign({ id: 1 }, process.env.TOKEN_KEY, { expiresIn: -1 });
+    const reply = await axios.get("http://localhost:3000/users", config(token));
     expect(reply.status).to.be.equal(401);
     expect(reply.data).to.be.deep.equal({
       message: "Authentication failed. Try logging in again",
@@ -116,13 +105,8 @@ describe("GET /users", function () {
     });
   });
   it("should return an error if authentication token has an invalid payload", async function () {
-    const payload = { name: "mariana" };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY);
-    const reply = await axios.get("http://localhost:3000/users", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const token = jwt.sign({ name: "mariana" }, process.env.TOKEN_KEY);
+    const reply = await axios.get("http://localhost:3000/users", config(token));
     expect(reply.status).to.be.equal(401);
     expect(reply.data).to.be.deep.equal({
       message: "Authentication failed. Try logging in once again",
