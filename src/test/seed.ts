@@ -12,9 +12,9 @@ async function main() {
   await prisma.$executeRaw`TRUNCATE TABLE "User" RESTART IDENTITY`;
 
   const users = await Promise.all(
-    Array.from({ length: 50 }).map(async () => ({
+    Array.from({ length: 50 }).map(async (_, idx, __) => ({
       name: faker.person.firstName(),
-      email: faker.internet.email(),
+      email: `${idx}--${faker.internet.email()}`,
       password: await hash(faker.internet.password(), 8),
       birthDate: faker.date.birthdate().toISOString(),
     }))
