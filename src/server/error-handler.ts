@@ -14,7 +14,7 @@ class CustomError extends Error {
 
 const errorStatusCodes: Record<string, number> = {
   EML_02: 400,
-  PSW_03: 400,
+  PSW_03: 401,
 };
 
 export function errorHandler(
