@@ -76,6 +76,15 @@ describe("POST /auth", function () {
     const decoded = jwt.verify(reply.data.token, process.env.TOKEN_KEY);
 
     expect(reply.status).to.be.equal(200);
+    expect(reply.data).to.be.deep.equal({
+      user: {
+        id: user.id,
+        name: test_data.name,
+        email: test_data.email,
+        birthDate: new Date(test_data.birthDate).toISOString(),
+      },
+      token: reply.data.token,
+    });
     expect(decoded.id).to.be.equal(user.id);
     expect(decoded.exp - decoded.iat).to.be.equal(7 * 24 * 60 * 60);
   });
