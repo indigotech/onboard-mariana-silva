@@ -4,7 +4,9 @@ import { prisma } from "../setup-db";
 
 import { expect } from "chai";
 import { start, stop } from "../setup";
-import axios from "./axios-for-test";
+import utils, { configRequestToken } from "./test-utils";
+
+const { testAxios: axios, validToken } = utils;
 
 before(async () => {
   await start();
@@ -14,16 +16,6 @@ after(async () => {
   await prisma.user.deleteMany();
   await stop();
 });
-
-function config(token: string) {
-  return {
-    headers: {
-      Authorization: `Bearer ${token}`,
-    },
-  };
-}
-
-const validToken = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
 
 async function getUsersList(take: number) {
   const users = await prisma.user.findMany({
@@ -46,7 +38,7 @@ describe("GET /users", function () {
 
     const reply = await axios.get(
       `http://localhost:3000/users?limit=${take}`,
-      config(validToken)
+      configRequestToken(validToken)
     );
 
     expect(reply.status).to.be.equal(200);
@@ -59,7 +51,7 @@ describe("GET /users", function () {
 
     const reply = await axios.get(
       "http://localhost:3000/users",
-      config(validToken)
+      configRequestToken(validToken)
     );
 
     expect(reply.status).to.be.equal(200);
@@ -70,7 +62,7 @@ describe("GET /users", function () {
   it("should return an error when passing a limit that is not a non-negative number", async function () {
     const reply = await axios.get(
       "http://localhost:3000/users?limit=abc",
-      config(validToken)
+      configRequestToken(validToken)
     );
 
     expect(reply.status).to.be.equal(400);
@@ -95,7 +87,10 @@ describe("GET /users", function () {
   it("should return an error if authentication token is invalid", async function () {
     const token = jwt.sign({ id: 1 }, "wrong_secret");
 
-    const reply = await axios.get("http://localhost:3000/users", config(token));
+    const reply = await axios.get(
+      "http://localhost:3000/users",
+      configRequestToken(token)
+    );
 
     expect(reply.status).to.be.equal(401);
     expect(reply.data).to.be.deep.equal({
@@ -108,7 +103,10 @@ describe("GET /users", function () {
   it("should return an error if authentication token is expired", async function () {
     const token = jwt.sign({ id: 1 }, process.env.TOKEN_KEY, { expiresIn: -1 });
 
-    const reply = await axios.get("http://localhost:3000/users", config(token));
+    const reply = await axios.get(
+      "http://localhost:3000/users",
+      configRequestToken(token)
+    );
 
     expect(reply.status).to.be.equal(401);
     expect(reply.data).to.be.deep.equal({
@@ -121,7 +119,10 @@ describe("GET /users", function () {
   it("should return an error if authentication token has an invalid payload", async function () {
     const token = jwt.sign({ name: "mariana" }, process.env.TOKEN_KEY);
 
-    const reply = await axios.get("http://localhost:3000/users", config(token));
+    const reply = await axios.get(
+      "http://localhost:3000/users",
+      configRequestToken(token)
+    );
 
     expect(reply.status).to.be.equal(401);
     expect(reply.data).to.be.deep.equal({
