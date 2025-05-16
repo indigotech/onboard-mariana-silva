@@ -8,8 +8,10 @@ export async function listUsersRoute(
   reply: FastifyReply
 ) {
   validateAuthentication(request);
+
   const { limit } = request.query;
   let userLimit: number;
+
   if (limit === undefined) {
     userLimit = 20;
   } else if (isNaN(+limit) || +limit < 0) {
@@ -21,11 +23,11 @@ export async function listUsersRoute(
   } else {
     userLimit = Number(limit);
   }
+
   const users = await prisma.user.findMany({
     take: userLimit,
     orderBy: { name: "asc" },
   });
-
   const usersData = users.map(({ password, ...user }) => user);
 
   return reply.status(200).send({ users: usersData });
