@@ -21,6 +21,9 @@ export async function getUserRoute(
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
+    include: {
+      addresses: true,
+    },
   });
 
   if (!user) {
