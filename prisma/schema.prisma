@@ -20,7 +20,7 @@ model User {
   password  String 
   birthDate DateTime
   addresses Address[]
-    }
+  }
 
 model Address {
   id           Int      @id @default(autoincrement())
