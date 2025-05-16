@@ -1,7 +1,9 @@
 import { expect } from "chai";
 import jwt from "jsonwebtoken";
 import "mocha";
-import axios, { createUser } from "./test-utils";
+import utils, { createUser } from "./test-utils";
+
+const { testAxios: axios, validToken } = utils;
 
 const test_data = {
   name: "mariana",

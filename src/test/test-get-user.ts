@@ -1,8 +1,7 @@
 import { expect } from "chai";
 import jwt from "jsonwebtoken";
 import "mocha";
-import axios from "./axios-for-test";
-import { createUser } from "./test-utils";
+import utils, { configRequestToken, createUser } from "./test-utils";
 
 const test_data = {
   name: "mariana",
@@ -11,17 +10,16 @@ const test_data = {
   birthDate: "2004-10-10",
 };
 
+const { testAxios: axios, validToken } = utils;
+
 describe("GET /users/:id", function () {
   it("should return data requested when the id is registered and the user is authenticated", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY);
     const user = await createUser(test_data);
 
-    const reply = await axios.get(`http://localhost:3000/users/${user?.id}`, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const reply = await axios.get(
+      `http://localhost:3000/users/${user?.id}`,
+      configRequestToken(validToken)
+    );
 
     expect(reply.status).to.be.equal(200);
     expect(reply.data).to.be.deep.equal({
@@ -33,14 +31,10 @@ describe("GET /users/:id", function () {
   });
 
   it("should return an error if the id is not a number", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY);
-
-    const reply = await axios.get("http://localhost:3000/users/abc", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const reply = await axios.get(
+      "http://localhost:3000/users/abc",
+      configRequestToken(validToken)
+    );
 
     expect(reply.status).to.be.equal(400);
     expect(reply.data).to.be.deep.equal({
@@ -51,14 +45,10 @@ describe("GET /users/:id", function () {
   });
 
   it("should return an error if the id is not found", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY);
-
-    const reply = await axios.get("http://localhost:3000/users/1", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const reply = await axios.get(
+      "http://localhost:3000/users/1",
+      configRequestToken(validToken)
+    );
 
     expect(reply.status).to.be.equal(404);
     expect(reply.data).to.be.deep.equal({
@@ -83,11 +73,10 @@ describe("GET /users/:id", function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, "wrong_secret");
 
-    const response = await axios.get("http://localhost:3000/users/3", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(
+      "http://localhost:3000/users/3",
+      configRequestToken(token)
+    );
 
     expect(response.status).to.be.equal(401);
     expect(response.data).to.be.deep.equal({
@@ -101,11 +90,10 @@ describe("GET /users/:id", function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, process.env.TOKEN_KEY, { expiresIn: -1 });
 
-    const response = await axios.get("http://localhost:3000/users/4", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(
+      "http://localhost:3000/users/4",
+      configRequestToken(token)
+    );
 
     expect(response.status).to.be.equal(401);
     expect(response.data).to.be.deep.equal({
@@ -118,11 +106,10 @@ describe("GET /users/:id", function () {
     const payload = { name: "mariana" };
     const token = jwt.sign(payload, process.env.TOKEN_KEY);
 
-    const response = await axios.get("http://localhost:3000/users/5", {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const response = await axios.get(
+      "http://localhost:3000/users/5",
+      configRequestToken(token)
+    );
 
     expect(response.status).to.be.equal(401);
     expect(response.data).to.be.deep.equal({

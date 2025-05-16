@@ -3,7 +3,9 @@ import { expect } from "chai";
 import jwt from "jsonwebtoken";
 import "mocha";
 import { prisma } from "../setup-db";
-import axios, { createUser } from "./test-utils";
+import utils, { configRequestToken, createUser } from "./test-utils";
+
+const { testAxios: axios, validToken } = utils;
 
 const test_data = {
   name: "mariana",
@@ -14,14 +16,11 @@ const test_data = {
 
 describe("POST /users", function () {
   it("should create a new user and return credentials + id (except from the password) when user is authenticated", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY);
-
-    const reply = await axios.post("http://localhost:3000/users", test_data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const reply = await axios.post(
+      "http://localhost:3000/users",
+      test_data,
+      configRequestToken(validToken)
+    );
     const user = await prisma.user.findUnique({
       where: { email: test_data.email },
     });
@@ -45,15 +44,13 @@ describe("POST /users", function () {
   });
 
   it("should return an error if the email already exists", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY);
     await createUser(test_data);
 
-    const reply = await axios.post("http://localhost:3000/users", test_data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const reply = await axios.post(
+      "http://localhost:3000/users",
+      test_data,
+      configRequestToken(validToken)
+    );
 
     expect(reply.status).to.be.equal(400);
     expect(reply.data).to.be.deep.equal({
@@ -64,8 +61,6 @@ describe("POST /users", function () {
   });
 
   it("should return an error if the password has less than 6 characters", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY);
     const body = {
       name: test_data.name,
       email: test_data.email,
@@ -73,11 +68,11 @@ describe("POST /users", function () {
       birthDate: test_data.birthDate,
     };
 
-    const reply = await axios.post("http://localhost:3000/users", body, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const reply = await axios.post(
+      "http://localhost:3000/users",
+      body,
+      configRequestToken(validToken)
+    );
 
     expect(reply.status).to.be.equal(400);
     expect(reply.data).to.be.deep.equal({
@@ -88,8 +83,6 @@ describe("POST /users", function () {
   });
 
   it("should return an error if the password has not letter or digits", async function () {
-    const payload = { id: 1 };
-    const token = jwt.sign(payload, process.env.TOKEN_KEY);
     const body = {
       name: test_data.name,
       email: test_data.email,
@@ -97,11 +90,11 @@ describe("POST /users", function () {
       birthDate: test_data.birthDate,
     };
 
-    const reply = await axios.post("http://localhost:3000/users", body, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const reply = await axios.post(
+      "http://localhost:3000/users",
+      body,
+      configRequestToken(validToken)
+    );
 
     expect(reply.status).to.be.equal(400);
     expect(reply.data).to.be.deep.equal({
@@ -126,11 +119,11 @@ describe("POST /users", function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, "wrong_secret");
 
-    const reply = await axios.post("http://localhost:3000/users", test_data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const reply = await axios.post(
+      "http://localhost:3000/users",
+      test_data,
+      configRequestToken(token)
+    );
 
     expect(reply.status).to.be.equal(401);
     expect(reply.data).to.be.deep.equal({
@@ -144,11 +137,11 @@ describe("POST /users", function () {
     const payload = { id: 1 };
     const token = jwt.sign(payload, process.env.TOKEN_KEY, { expiresIn: -1 });
 
-    const reply = await axios.post("http://localhost:3000/users", test_data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const reply = await axios.post(
+      "http://localhost:3000/users",
+      test_data,
+      configRequestToken(token)
+    );
 
     expect(reply.status).to.be.equal(401);
     expect(reply.data).to.be.deep.equal({
@@ -162,11 +155,11 @@ describe("POST /users", function () {
     const payload = { name: "mariana" };
     const token = jwt.sign(payload, process.env.TOKEN_KEY);
 
-    const reply = await axios.post("http://localhost:3000/users", test_data, {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    });
+    const reply = await axios.post(
+      "http://localhost:3000/users",
+      test_data,
+      configRequestToken(token)
+    );
 
     expect(reply.status).to.be.equal(401);
     expect(reply.data).to.be.deep.equal({
