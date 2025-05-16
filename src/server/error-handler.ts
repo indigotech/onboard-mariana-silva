@@ -1,6 +1,5 @@
 import { Prisma } from "@prisma/client";
 import { FastifyError, FastifyReply, FastifyRequest } from "fastify";
-import jwt from "jsonwebtoken";
 
 class CustomError extends Error {
   code: string;
@@ -18,6 +17,10 @@ const errorStatusCodes: Record<string, number> = {
   PSW_03: 401,
   AUT_01: 401,
   AUT_02: 401,
+  AUT_03: 401,
+  AUT_04: 401,
+  USR_01: 404,
+  USR_02: 400,
 };
 
 export function errorHandler(
@@ -32,18 +35,6 @@ export function errorHandler(
       details: error.details,
     });
   }
-
-  if (
-    error instanceof jwt.JsonWebTokenError ||
-    error instanceof jwt.TokenExpiredError
-  ) {
-    return reply.status(401).send({
-      message: "Authentication failed. Try logging in again",
-      code: error instanceof jwt.TokenExpiredError ? "AUT_04" : "AUT_03",
-      details: error.message,
-    });
-  }
-
   if (error.validation && error.validation.length > 0) {
     for (const validationError of error.validation) {
       const { instancePath, keyword, message } = validationError;

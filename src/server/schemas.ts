@@ -1,4 +1,4 @@
-export const UserRequestBodySchema = {
+export const PostUserBodySchema = {
   schema: {
     body: {
       type: "object",
@@ -26,7 +26,7 @@ export const UserRequestBodySchema = {
   },
 };
 
-export const AuthRequestBodySchema = {
+export const PostAuthBodySchema = {
   schema: {
     body: {
       type: "object",
@@ -46,9 +46,15 @@ export const AuthRequestBodySchema = {
   },
 };
 
-export interface RequestBody {
+export interface PostUserRequestBody {
   name: string;
   email: string;
   password: string;
   birthDate: string;
+}
+
+export interface PostAuthRequestBody {
+  email: string;
+  password: string;
+  rememberMe?: boolean;
 }

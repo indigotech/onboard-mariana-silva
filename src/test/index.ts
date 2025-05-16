@@ -16,5 +16,6 @@ afterEach(async () => {
 });
 
 import "./test-create-user";
+import "./test-get-user";
 import "./test-hello";
 import "./test-login";
