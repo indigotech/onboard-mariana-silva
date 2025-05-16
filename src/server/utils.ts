@@ -1,6 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
 import jwt from "jsonwebtoken";
-import { User } from "./../generated/prisma/index.d";
 import { CustomError } from "./error-handler";
 
 export function validateAuthentication(request: FastifyRequest) {
