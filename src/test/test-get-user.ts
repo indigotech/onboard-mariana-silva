@@ -8,12 +8,25 @@ const test_data = {
   email: "mari@gmail.com",
   password: "senha123",
   birthDate: "2004-10-10",
+  addresses: [
+    {
+      CEP: "12345-678",
+      street: "Main St",
+      number: 54,
+      complement: "Apto 4B",
+      neighborhood: "Bairro",
+      city: "São Paulo",
+      state: "Minas Gerais",
+    },
+  ],
 };
 
 const { testAxios: axios, validToken } = utils;
 
 describe("GET /users/:id", function () {
-  it("should return data requested when the id is registered and the user is authenticated", async function () {
+  it("should return the user data requested with their addresses swhen the id is registered and the user is authenticated", async function () {
+    const payload = { id: 1 };
+    const token = jwt.sign(payload, process.env.TOKEN_KEY);
     const user = await createUser(test_data);
 
     const reply = await axios.get(
@@ -27,6 +40,43 @@ describe("GET /users/:id", function () {
       name: test_data.name,
       email: test_data.email,
       birthDate: new Date(test_data.birthDate).toISOString(),
+      addresses: test_data.addresses.map((address, idx) => ({
+        CEP: address.CEP,
+        street: address.street,
+        number: address.number,
+        complement: address.complement,
+        neighborhood: address.neighborhood,
+        state: address.state,
+        city: address.city,
+        id: user.addresses[idx].id,
+        userID: user.addresses[idx].userID,
+      })),
+    });
+  });
+
+  it("should return no addresses if the user has not registered any and if the request is authenticated", async function () {
+    const payload = { id: 1 };
+    const token = jwt.sign(payload, process.env.TOKEN_KEY);
+    const user = await createUser({
+      name: test_data.name,
+      email: test_data.email,
+      password: test_data.password,
+      birthDate: test_data.birthDate,
+    });
+
+    const reply = await axios.get(`http://localhost:3000/users/${user?.id}`, {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    });
+
+    expect(reply.status).to.be.equal(200);
+    expect(reply.data).to.be.deep.equal({
+      id: user?.id,
+      name: test_data.name,
+      email: test_data.email,
+      birthDate: new Date(test_data.birthDate).toISOString(),
+      addresses: [],
     });
   });
 
