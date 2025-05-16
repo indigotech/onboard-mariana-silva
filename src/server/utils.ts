@@ -1,5 +1,5 @@
 import { FastifyReply, FastifyRequest } from "fastify";
-import jwt from "jsonwebtoken";
+import jwt, { JwtPayload } from "jsonwebtoken";
 import { CustomError } from "./error-handler";
 
 export function validateAuthentication(request: FastifyRequest) {
@@ -12,8 +12,26 @@ export function validateAuthentication(request: FastifyRequest) {
     );
   }
   const token = authHeader.split(" ")[1];
-  const decoded = jwt.verify(token, process.env.TOKEN_KEY);
-  if (!decoded.id) {
+
+  let payload: JwtPayload;
+  try {
+    payload = jwt.verify(token, process.env.TOKEN_KEY);
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      throw new CustomError(
+        "Authentication failed. Try logging in again",
+        "AUT_04",
+        err.message
+      );
+    } else {
+      throw new CustomError(
+        "Authentication failed. Try logging in again",
+        "AUT_03",
+        err.message
+      );
+    }
+  }
+  if (!payload.id) {
     throw new CustomError(
       "Authentication failed. Try logging in once again",
       "AUT_02",
