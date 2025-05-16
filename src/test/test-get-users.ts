@@ -3,17 +3,8 @@ import "mocha";
 import { prisma } from "../setup-db";
 
 import { expect } from "chai";
-import { start, stop } from "../setup";
+import { getNextUser, getPreviousUser } from "../server/route-get-users";
 import axios from "./axios-for-test";
-
-before(async () => {
-  await start();
-});
-
-after(async () => {
-  await prisma.user.deleteMany();
-  await stop();
-});
 
 function config(token: string) {
   return {
@@ -25,9 +16,10 @@ function config(token: string) {
 
 const validToken = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
 
-async function getUsersList(take: number) {
+async function getUsersList(take: number = 20, offset: number = 0) {
   const users = await prisma.user.findMany({
     take,
+    skip: offset,
     orderBy: {
       name: "asc",
     },
@@ -40,9 +32,35 @@ async function getUsersList(take: number) {
 }
 
 describe("GET /users", function () {
-  it("should return a list of users when passing a number limit", async function () {
+  it("should return a paginated list of users with specified limit and offset", async function () {
+    const take = 15;
+    const offset = 5;
+    const users = await getUsersList(take, offset);
+    const total = await prisma.user.count();
+    const previousUser = await getPreviousUser(users);
+    const nextUser = await getNextUser(users);
+
+    const reply = await axios.get(
+      `http://localhost:3000/users?limit=${take}&offset=${offset}`,
+      config(validToken)
+    );
+
+    expect(reply.status).to.be.equal(200);
+    expect(reply.data).to.be.deep.equal({
+      users: users,
+      total: total,
+      offset: offset,
+      previous: previousUser,
+      next: nextUser,
+    });
+    expect(reply.data.users.length).to.be.equal(take);
+  });
+
+  it("should return the first set of users with specified limit and no offset", async function () {
     const take = 15;
     const users = await getUsersList(take);
+    const total = await prisma.user.count();
+    const nextUser = await getNextUser(users);
 
     const reply = await axios.get(
       `http://localhost:3000/users?limit=${take}`,
@@ -50,12 +68,44 @@ describe("GET /users", function () {
     );
 
     expect(reply.status).to.be.equal(200);
-    expect(reply.data).to.be.deep.equal({ users: users });
-    expect(reply.data.users.length).to.be.equal(15);
+    expect(reply.data).to.be.deep.equal({
+      users: users,
+      total: total,
+      offset: 0,
+      previous: null,
+      next: nextUser,
+    });
+    expect(reply.data.users.length).to.be.equal(take);
   });
 
-  it("should return a list of users with default limit when not passing a limit", async function () {
-    const users = await getUsersList(20);
+  it("should return a paginated list starting from the specified offset with the default limit", async function () {
+    const offset = 5;
+    const users = await getUsersList(20, offset);
+    const total = await prisma.user.count();
+    const previousUser = await getPreviousUser(users);
+    const nextUser = await getNextUser(users);
+
+    const reply = await axios.get(
+      `http://localhost:3000/users?offset=${offset}`,
+      config(validToken)
+    );
+
+    expect(reply.status).to.be.equal(200);
+    expect(reply.data).to.be.deep.equal({
+      users: users,
+      total: total,
+      offset: offset,
+      previous: previousUser,
+      next: nextUser,
+    });
+    expect(reply.data.users.length).to.be.equal(20);
+  });
+
+  it("should return the first set of users with the default limit when no limit or offset is provided", async function () {
+    const users = await getUsersList();
+    const total = await prisma.user.count();
+    const previousUser = await getPreviousUser(users);
+    const nextUser = await getNextUser(users);
 
     const reply = await axios.get(
       "http://localhost:3000/users",
@@ -63,7 +113,13 @@ describe("GET /users", function () {
     );
 
     expect(reply.status).to.be.equal(200);
-    expect(reply.data).to.be.deep.equal({ users: users });
+    expect(reply.data).to.be.deep.equal({
+      users: users,
+      total: total,
+      offset: 0,
+      previous: null,
+      next: nextUser,
+    });
     expect(reply.data.users.length).to.be.equal(20);
   });
 
