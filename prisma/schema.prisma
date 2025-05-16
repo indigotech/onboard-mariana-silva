@@ -24,13 +24,13 @@ model User {
 
 model Address {
   id           Int      @id @default(autoincrement())
+  userID       Int
+  user         User     @relation(fields: [userID], references: [id])
   CEP          String
   street       String
   number       String
   complement   String
   neighborhood String
-  city         Int
+  city         String
   state        String
-  userID       Int
-  user         User     @relation(fields: [userID], references: [id])
 }
