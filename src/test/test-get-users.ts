@@ -32,7 +32,7 @@ async function getUsersList(take: number) {
       name: "asc",
     },
   });
-  const formattedUsers = users.map((user) => ({
+  const formattedUsers = users.map(({ password, ...user }, idx) => ({
     ...user,
     birthDate: user.birthDate.toISOString(),
   }));

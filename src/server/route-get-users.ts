@@ -25,5 +25,8 @@ export async function listUsersRoute(
     take: userLimit,
     orderBy: { name: "asc" },
   });
-  return reply.status(200).send({ users });
+
+  const usersData = users.map(({ password, ...user }) => user);
+
+  return reply.status(200).send({ users: usersData });
 }
