@@ -28,7 +28,7 @@ model Address {
   user         User     @relation(fields: [userID], references: [id])
   CEP          String
   street       String
-  number       String
+  number       Int
   complement   String
   neighborhood String
   city         String
