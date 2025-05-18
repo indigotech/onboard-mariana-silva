@@ -23,7 +23,7 @@ async function executeSeeding() {
             create: Array.from({
               length: faker.number.int({ min: 0, max: 4 }),
             }).map(() => ({
-              CEP: faker.location.zipCode("xxxxx-xxx"),
+              CEP: faker.location.zipCode("#####-###"),
               street: faker.location.street(),
               number: faker.number.int({ min: 1, max: 8000 }),
               complement: faker.location.secondaryAddress(),
