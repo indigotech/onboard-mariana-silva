@@ -38,7 +38,11 @@ export async function listUsersRoute(
     skip: userOffset,
     take: userLimit,
     orderBy: { name: "asc" },
+    include: {
+      addresses: true,
+    },
   });
+
   const usersData = users.map(({ password, ...user }) => user);
 
   const total = await prisma.user.count();
