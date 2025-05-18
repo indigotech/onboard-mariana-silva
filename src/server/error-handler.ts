@@ -21,6 +21,7 @@ const errorStatusCodes: Record<string, number> = {
   AUT_04: 401,
   USR_01: 404,
   USR_02: 400,
+  USR_03: 400,
 };
 
 export function errorHandler(
