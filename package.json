@@ -9,7 +9,7 @@
     "dev": "tsx watch ./src/index.ts",
     "lint": "eslint ./src --ext .ts",
     "build": "tsc",
-    "test": "DOTENV_CONFIG_PATH=./.test.env mocha -r tsx -r dotenv/config index.ts"
+    "test": "DOTENV_CONFIG_PATH=./.test.env mocha -r tsx -r dotenv/config src/test/index.ts"
   },
   "keywords": [],
   "author": "",
