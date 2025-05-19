@@ -6,7 +6,7 @@ const prisma = new PrismaClient();
 
 faker.seed(0);
 
-async function executeSeeding() {
+async function main() {
   console.log("Start seeding...");
 
   await prisma.$executeRaw`TRUNCATE TABLE "User" RESTART IDENTITY CASCADE`;
@@ -41,15 +41,11 @@ async function executeSeeding() {
   console.log("Seeding completed.");
 }
 
-async function seed() {
-  executeSeeding()
-    .catch((error) => {
-      console.error(error);
-      process.exit(1);
-    })
-    .finally(async () => {
-      await prisma.$disconnect();
-    });
-}
-
-await seed();
+main()
+  .catch((error) => {
+    console.error(error);
+    process.exit(1);
+  })
+  .finally(async () => {
+    await prisma.$disconnect();
+  });
