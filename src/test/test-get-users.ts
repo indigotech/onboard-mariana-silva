@@ -1,9 +1,8 @@
+import { expect } from "chai";
 import jwt from "jsonwebtoken";
 import "mocha";
 import { prisma } from "../setup-db";
 
-import { expect } from "chai";
-import { getNextUser, getPreviousUser } from "../server/route-get-users";
 import utils, { configRequestToken } from "./test-utils";
 
 const { testAxios: axios, validToken } = utils;
@@ -39,8 +38,6 @@ describe("GET /users", function () {
     const offset = 5;
     const users = await getUsersList(take, offset);
     const total = await prisma.user.count();
-    const previousUser = await getPreviousUser(users);
-    const nextUser = await getNextUser(users);
 
     const reply = await axios.get(
       `http://localhost:3000/users?limit=${take}&offset=${offset}`,
@@ -52,8 +49,8 @@ describe("GET /users", function () {
       users: users,
       total: total,
       offset: offset,
-      previous: previousUser,
-      next: nextUser,
+      hasPreviousPage: true,
+      hasNextPage: true,
     });
     expect(reply.data.users.length).to.be.equal(take);
   });
@@ -62,7 +59,6 @@ describe("GET /users", function () {
     const take = 15;
     const users = await getUsersList(take);
     const total = await prisma.user.count();
-    const nextUser = await getNextUser(users);
 
     const reply = await axios.get(
       `http://localhost:3000/users?limit=${take}`,
@@ -74,8 +70,8 @@ describe("GET /users", function () {
       users: users,
       total: total,
       offset: 0,
-      previous: null,
-      next: nextUser,
+      hasPreviousPage: false,
+      hasNextPage: true,
     });
     expect(reply.data.users.length).to.be.equal(take);
   });
@@ -84,8 +80,6 @@ describe("GET /users", function () {
     const offset = 5;
     const users = await getUsersList(20, offset);
     const total = await prisma.user.count();
-    const previousUser = await getPreviousUser(users);
-    const nextUser = await getNextUser(users);
 
     const reply = await axios.get(
       `http://localhost:3000/users?offset=${offset}`,
@@ -97,8 +91,8 @@ describe("GET /users", function () {
       users: users,
       total: total,
       offset: offset,
-      previous: previousUser,
-      next: nextUser,
+      hasPreviousPage: true,
+      hasNextPage: true,
     });
     expect(reply.data.users.length).to.be.equal(20);
   });
@@ -106,8 +100,6 @@ describe("GET /users", function () {
   it("should return the first set of users with the default limit when no limit or offset is provided", async function () {
     const users = await getUsersList();
     const total = await prisma.user.count();
-    const previousUser = await getPreviousUser(users);
-    const nextUser = await getNextUser(users);
 
     const reply = await axios.get(
       "http://localhost:3000/users",
@@ -119,8 +111,8 @@ describe("GET /users", function () {
       users: users,
       total: total,
       offset: 0,
-      previous: null,
-      next: nextUser,
+      hasPreviousPage: false,
+      hasNextPage: true,
     });
     expect(reply.data.users.length).to.be.equal(20);
   });
