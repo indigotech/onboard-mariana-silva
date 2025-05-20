@@ -1,25 +1,26 @@
+import { expect } from "chai";
 import jwt from "jsonwebtoken";
 import "mocha";
 import { prisma } from "../setup-db";
 
-import { expect } from "chai";
-import { start, stop } from "../setup";
 import utils, { configRequestToken } from "./test-utils";
 
 const { testAxios: axios, validToken } = utils;
 
-before(async () => {
-  await start();
-});
+function config(token: string) {
+  return {
+    headers: {
+      Authorization: `Bearer ${token}`,
+    },
+  };
+}
 
-after(async () => {
-  await prisma.user.deleteMany();
-  await stop();
-});
+const validToken = jwt.sign({ id: 1 }, process.env.TOKEN_KEY);
 
-async function getUsersList(take: number) {
+async function getUsersList(take: number = 20, offset: number = 0) {
   const users = await prisma.user.findMany({
     take,
+    skip: offset,
     orderBy: {
       name: "asc",
     },
@@ -32,22 +33,73 @@ async function getUsersList(take: number) {
 }
 
 describe("GET /users", function () {
-  it("should return a list of users when passing a number limit", async function () {
+  it("should return a paginated list of users with specified limit and offset", async function () {
     const take = 15;
-    const users = await getUsersList(take);
+    const offset = 5;
+    const users = await getUsersList(take, offset);
+    const total = await prisma.user.count();
 
     const reply = await axios.get(
-      `http://localhost:3000/users?limit=${take}`,
-      configRequestToken(validToken)
+      `http://localhost:3000/users?limit=${take}&offset=${offset}`,
+      config(validToken)
     );
 
     expect(reply.status).to.be.equal(200);
-    expect(reply.data).to.be.deep.equal({ users: users });
-    expect(reply.data.users.length).to.be.equal(15);
+    expect(reply.data).to.be.deep.equal({
+      users: users,
+      total: total,
+      offset: offset,
+      hasPreviousPage: true,
+      hasNextPage: true,
+    });
+    expect(reply.data.users.length).to.be.equal(take);
   });
 
-  it("should return a list of users with default limit when not passing a limit", async function () {
-    const users = await getUsersList(20);
+  it("should return the first set of users with specified limit and no offset", async function () {
+    const take = 15;
+    const users = await getUsersList(take);
+    const total = await prisma.user.count();
+
+    const reply = await axios.get(
+      `http://localhost:3000/users?limit=${take}`,
+      config(validToken)
+    );
+
+    expect(reply.status).to.be.equal(200);
+    expect(reply.data).to.be.deep.equal({
+      users: users,
+      total: total,
+      offset: 0,
+      hasPreviousPage: false,
+      hasNextPage: true,
+    });
+    expect(reply.data.users.length).to.be.equal(take);
+  });
+
+  it("should return a paginated list starting from the specified offset with the default limit", async function () {
+    const offset = 5;
+    const users = await getUsersList(20, offset);
+    const total = await prisma.user.count();
+
+    const reply = await axios.get(
+      `http://localhost:3000/users?offset=${offset}`,
+      config(validToken)
+    );
+
+    expect(reply.status).to.be.equal(200);
+    expect(reply.data).to.be.deep.equal({
+      users: users,
+      total: total,
+      offset: offset,
+      hasPreviousPage: true,
+      hasNextPage: true,
+    });
+    expect(reply.data.users.length).to.be.equal(20);
+  });
+
+  it("should return the first set of users with the default limit when no limit or offset is provided", async function () {
+    const users = await getUsersList();
+    const total = await prisma.user.count();
 
     const reply = await axios.get(
       "http://localhost:3000/users",
@@ -55,8 +107,53 @@ describe("GET /users", function () {
     );
 
     expect(reply.status).to.be.equal(200);
-    expect(reply.data).to.be.deep.equal({ users: users });
+    expect(reply.data).to.be.deep.equal({
+      users: users,
+      total: total,
+      offset: 0,
+      hasPreviousPage: false,
+      hasNextPage: true,
+    });
     expect(reply.data.users.length).to.be.equal(20);
+  });
+
+  it("should return hasNext as false when returning the last users", async function () {
+    const take = 1;
+    const offset = 49;
+    const users = await getUsersList(take, offset);
+    const total = await prisma.user.count();
+
+    const reply = await axios.get(
+      `http://localhost:3000/users?limit=${take}&offset=${offset}`,
+      config(validToken)
+    );
+    expect(reply.status).to.be.equal(200);
+    expect(reply.data).to.be.deep.equal({
+      users: users,
+      total: total,
+      offset: offset,
+      hasPreviousPage: true,
+      hasNextPage: false,
+    });
+    expect(reply.data.users.length).to.be.equal(take);
+  });
+
+  it("should return an empty list when passing an offset that is greater than the total of users", async function () {
+    const total = await prisma.user.count();
+
+    const reply = await axios.get(
+      "http://localhost:3000/users?offset=1000",
+      config(validToken)
+    );
+
+    expect(reply.status).to.be.equal(200);
+    expect(reply.data).to.be.deep.equal({
+      users: [],
+      total: total,
+      offset: 1000,
+      hasPreviousPage: true,
+      hasNextPage: false,
+    });
   });
 
   it("should return an error when passing a limit that is not a non-negative number", async function () {
