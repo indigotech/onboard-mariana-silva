@@ -24,8 +24,11 @@ async function getUsersList(take: number = 20, offset: number = 0) {
     orderBy: {
       name: "asc",
     },
+    include: {
+      addresses: true,
+    },
   });
-  const formattedUsers = users.map(({ password, ...user }, idx) => ({
+  const formattedUsers = users.map(({ password, ...user }) => ({
     ...user,
     birthDate: user.birthDate.toISOString(),
   }));
