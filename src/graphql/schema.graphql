@@ -1,0 +1,37 @@
+input LoginInput {
+  email: String!
+  password: String!
+  rememberMe: Boolean
+}
+
+type User {
+  id: Int!
+  name: String!
+  email: String!
+  birthDate: String!
+  addresses: [Address]
+}
+
+type Address {
+  id: Int!
+  cep: String!
+  number: Int!
+  street: String!
+  city: String!
+  state: String!
+  neighborhood: String!
+  complement: String!
+}
+
+type AuthPayload {
+  token: String!
+  user: User!
+}
+
+type Query {
+  getUser(id: Int!): User
+}
+
+type Mutation {
+  login(input: LoginInput!): AuthPayload
+}
