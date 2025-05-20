@@ -26,7 +26,7 @@ model Address {
   id           Int      @id @default(autoincrement())
   userID       Int
   user         User     @relation(fields: [userID], references: [id])
-  CEP          String
+  cep          String
   street       String
   number       Int
   complement   String
