@@ -7,11 +7,13 @@ before(async () => {
 });
 
 after(async () => {
+  await prisma.address.deleteMany();
   await prisma.user.deleteMany();
   await stop();
 });
 
 afterEach(async () => {
+  await prisma.address.deleteMany();
   await prisma.user.deleteMany();
 });
 

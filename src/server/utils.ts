@@ -49,10 +49,6 @@ interface User {
 }
 
 export function replyUserData(user: User, status: number, reply: FastifyReply) {
-  return reply.code(status).send({
-    id: user.id,
-    name: user.name,
-    email: user.email,
-    birthDate: user.birthDate,
-  });
+  const { password, ...userData } = user;
+  return reply.code(status).send(userData);
 }
