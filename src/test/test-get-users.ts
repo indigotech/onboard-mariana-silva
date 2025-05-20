@@ -117,6 +117,45 @@ describe("GET /users", function () {
     expect(reply.data.users.length).to.be.equal(20);
   });
 
+  it("should return hasNext as false when returning the last users", async function () {
+    const take = 1;
+    const offset = 49;
+    const users = await getUsersList(take, offset);
+    const total = await prisma.user.count();
+
+    const reply = await axios.get(
+      `http://localhost:3000/users?limit=${take}&offset=${offset}`,
+      config(validToken)
+    );
+    expect(reply.status).to.be.equal(200);
+    expect(reply.data).to.be.deep.equal({
+      users: users,
+      total: total,
+      offset: offset,
+      hasPreviousPage: true,
+      hasNextPage: false,
+    });
+    expect(reply.data.users.length).to.be.equal(take);
+  });
+
+  it("should return an empty list when passing an offset that is greater than the total of users", async function () {
+    const total = await prisma.user.count();
+
+    const reply = await axios.get(
+      "http://localhost:3000/users?offset=1000",
+      config(validToken)
+    );
+
+    expect(reply.status).to.be.equal(200);
+    expect(reply.data).to.be.deep.equal({
+      users: [],
+      total: total,
+      offset: 1000,
+      hasPreviousPage: true,
+      hasNextPage: false,
+    });
+  });
+
   it("should return an error when passing a limit that is not a non-negative number", async function () {
     const reply = await axios.get(
       "http://localhost:3000/users?limit=abc",
